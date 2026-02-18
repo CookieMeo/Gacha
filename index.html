@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моя Гача Игра</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Обязательно для Telegram Mini Apps -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="app-container">
+        <!-- HEADER (для демонстрации) -->
+        <div id="header">
+            <span id="strawberry-count">🍓 0</span>
+        </div>
+
+        <!-- Секция ДОМ -->
+        <div id="home-section" class="app-section active">
+            <h2>Мои Животные</h2>
+            <div id="animals-grid">
+                <!-- Здесь будут отображаться животные -->
+            </div>
+            <p id="no-animals-message">У вас пока нет животных. Покрутите гачу!</p>
+        </div>
+
+        <!-- Секция ГАЧА -->
+        <div id="gacha-section" class="app-section">
+            <h2>Испытай удачу!</h2>
+            <div id="gacha-spinner-container">
+                <div id="gacha-spinner">
+                    <div class="segment violet"></div>
+                    <div class="segment blue"></div>
+                    <div class="segment cyan"></div>
+                    <div class="segment green"></div>
+                    <div class="segment yellow"></div>
+                    <div class="segment orange"></div>
+                    <div class="segment red"></div>
+                </div>
+                <div id="spinner-indicator"></div>
+            </div>
+            <div id="gacha-result">
+                <img id="gacha-animal-image" src="" alt="Результат гачи" style="display: none;">
+                <p id="gacha-animal-name" style="display: none;"></p>
+                <p id="gacha-animal-rarity" style="display: none;"></p>
+            </div>
+            <div id="pity-info">
+                <p>До гарантированного: </p>
+                <ul id="pity-list"></ul>
+            </div>
+            <div class="gacha-buttons">
+                <button id="spin-1-btn">Крутить 1 раз (100 🍓)</button>
+                <button id="spin-10-btn">Крутить 10 раз (1000 🍓)</button>
+            </div>
+        </div>
+
+        <!-- Секция ИГРА (КЛИКЕР) -->
+        <div id="game-section" class="app-section">
+            <h2>Ферма клубники</h2>
+            <div class="clicker-container">
+                <img src="https://em-content.zobj.net/source/apple/354/strawberry_1f353.png" alt="Клубника" id="strawberry-image">
+                <div id="click-feedback"></div>
+            </div>
+            <p>Уровень клубники: <span id="clicker-level">1</span></p>
+            <p>Клубник за клик: <span id="strawberries-per-click">1</span></p>
+            <button id="upgrade-clicker-btn">Улучшить (0 🍓)</button>
+            <p id="upgrade-cost-info"></p>
+        </div>
+
+        <!-- Секция ПРОФИЛЬ -->
+        <div id="profile-section" class="app-section">
+            <h2>Профиль</h2>
+            <div class="profile-info">
+                <img id="profile-avatar" src="https://via.placeholder.com/100" alt="Аватар" class="profile-avatar">
+                <p>Ник: <span id="profile-nickname">Пользователь ТГ</span></p>
+                <p>Везение: <span id="profile-luck">0%</span></p>
+                <p>Всего питомцев: <span id="profile-total-pets">0</span></p>
+                <p>Потрачено клубник: <span id="profile-strawberries-spent">0</span></p>
+                <p>Сделано кликов: <span id="profile-total-clicks">0</span></p>
+            </div>
+            <div class="promo-code-section">
+                <h3>Промокод</h3>
+                <input type="text" id="promo-code-input" placeholder="Введите промокод">
+                <button id="activate-promo-btn">Активировать</button>
+                <p id="promo-message"></p>
+            </div>
+        </div>
+
+        <!-- FOOTER (Кнопки навигации) -->
+        <div id="navbar">
+            <button id="nav-home">🏠 Дом</button>
+            <button id="nav-gacha">🎰 Гача</button>
+            <button id="nav-game">🍓 Игра</button>
+            <button id="nav-profile">👤 Профиль</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
