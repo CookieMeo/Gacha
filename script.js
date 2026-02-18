@@ -51,66 +51,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Game Data & Configuration ---
     const RARITIES = {
-        'êðàñíîå': { chance: 0.005, name: 'Êðàñíîå (Ëåãåíäàðíîå)', color: 'red', pity: 40 },
-        'îðàíæåâîå': { chance: 0.015, name: 'Îðàíæåâîå (Ýïè÷åñêîå)', color: 'orange', pity: 30 },
-        'æåëòîå': { chance: 0.03, name: 'Æåëòîå (Ðåäêîå)', color: 'yellow', pity: 15 },
-        'çåëåíîå': { chance: 0.08, name: 'Çåëåíîå (Íåîáû÷íîå)', color: 'green', pity: 10 },
-        'ãîëóáîå': { chance: 0.15, name: 'Ãîëóáîå (Îñîáîå)', color: 'cyan', pity: 5 },
-        'ñèíåå': { chance: 0.25, name: 'Ñèíåå (Îáû÷íîå+)', color: 'blue', pity: 3 },
-        'ôèîëåòîâîå': { chance: 0.46, name: 'Ôèîëåòîâîå (Îáû÷íîå)', color: 'violet', pity: 0 } // No explicit pity for common
+        'красное': { chance: 0.005, name: 'Красное (Легендарное)', color: 'red', pity: 40 },
+        'оранжевое': { chance: 0.015, name: 'Оранжевое (Эпическое)', color: 'orange', pity: 30 },
+        'желтое': { chance: 0.03, name: 'Желтое (Редкое)', color: 'yellow', pity: 15 },
+        'зеленое': { chance: 0.08, name: 'Зеленое (Необычное)', color: 'green', pity: 10 },
+        'голубое': { chance: 0.15, name: 'Голубое (Особое)', color: 'cyan', pity: 5 },
+        'синее': { chance: 0.25, name: 'Синее (Обычное+)', color: 'blue', pity: 3 },
+        'фиолетовое': { chance: 0.46, name: 'Фиолетовое (Обычное)', color: 'violet', pity: 0 } // No explicit pity for common
     };
-    const BANNER_ANIMAL_ID = 'dragon_legendary'; // ID áàííåðíîãî æèâîòíîãî
+    const BANNER_ANIMAL_ID = 'dragon_legendary'; // ID баннерного животного
     const GACHA_COST_PER_SPIN = 100;
 
     const ANIMALS = [
-        // Êðàñíîå
-        { id: 'dragon_legendary', name: 'Îãíåííûé Äðàêîí', rarity: 'êðàñíîå', image: 'https://cdn-icons-png.flaticon.com/512/3050/3050300.png' },
-        { id: 'phoenix_legendary', name: 'Ôåíèêñ', rarity: 'êðàñíîå', image: 'https://cdn-icons-png.flaticon.com/512/3673/3673752.png' },
-        { id: 'unicorn_legendary', name: 'Åäèíîðîã', rarity: 'êðàñíîå', image: 'https://cdn-icons-png.flaticon.com/512/1155/1155073.png' },
-        // Îðàíæåâîå
-        { id: 'griffin_epic', name: 'Ãðèôîí', rarity: 'îðàíæåâîå', image: 'https://cdn-icons-png.flaticon.com/512/2855/2855169.png' },
-        { id: 'sphinx_epic', name: 'Ñôèíêñ', rarity: 'îðàíæåâîå', image: 'https://cdn-icons-png.flaticon.com/512/2165/2165039.png' },
-        { id: 'minotaur_epic', name: 'Ìèíîòàâð', rarity: 'îðàíæåâîå', image: 'https://cdn-icons-png.flaticon.com/512/2165/2165037.png' },
-        // Æåëòîå
-        { id: 'wolf_rare', name: 'Ñíåæíûé Âîëê', rarity: 'æåëòîå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049282.png' },
-        { id: 'fox_rare', name: 'Õèòðàÿ Ëèñà', rarity: 'æåëòîå', image: 'https://cdn-icons-png.flaticon.com/512/1070/1070220.png' },
-        { id: 'owl_rare', name: 'Ìóäðûé Ôèëèí', rarity: 'æåëòîå', image: 'https://cdn-icons-png.flaticon.com/512/2619/2619721.png' },
-        // Çåëåíîå
-        { id: 'bear_uncommon', name: 'Áóðûé Ìåäâåäü', rarity: 'çåëåíîå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049286.png' },
-        { id: 'deer_uncommon', name: 'Áëàãîðîäíûé Îëåíü', rarity: 'çåëåíîå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049272.png' },
-        { id: 'rabbit_uncommon', name: 'Áûñòðûé Çàÿö', rarity: 'çåëåíîå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049266.png' },
-        // Ãîëóáîå
-        { id: 'dog_special', name: 'Âåðíûé Ï¸ñ', rarity: 'ãîëóáîå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049289.png' },
-        { id: 'cat_special', name: 'Ãðàöèîçíûé Êîò', rarity: 'ãîëóáîå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049270.png' },
-        { id: 'parrot_special', name: 'Ãîâîðÿùèé Ïîïóãàé', rarity: 'ãîëóáîå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049297.png' },
-        // Ñèíåå
-        { id: 'pig_common_plus', name: 'Âåñåëûé Ïîðîñ¸íîê', rarity: 'ñèíåå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049301.png' },
-        { id: 'cow_common_plus', name: 'Ìèðíàÿ Êîðîâà', rarity: 'ñèíåå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049271.png' },
-        { id: 'chicken_common_plus', name: 'Êóðèöà-íåñóøêà', rarity: 'ñèíåå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049268.png' },
-        // Ôèîëåòîâîå
-        { id: 'mouse_common', name: 'Ìàëåíüêàÿ Ìûøêà', rarity: 'ôèîëåòîâîå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049293.png' },
-        { id: 'frog_common', name: 'Çåë¸íàÿ Ëÿãóøêà', rarity: 'ôèîëåòîâîå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049277.png' },
-        { id: 'fish_common', name: 'Çîëîòàÿ Ðûáêà', rarity: 'ôèîëåòîâîå', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049276.png' }
+        // Красное
+        { id: 'dragon_legendary', name: 'Огненный Дракон', rarity: 'красное', image: 'https://cdn-icons-png.flaticon.com/512/3050/3050300.png' },
+        { id: 'phoenix_legendary', name: 'Феникс', rarity: 'красное', image: 'https://cdn-icons-png.flaticon.com/512/3673/3673752.png' },
+        { id: 'unicorn_legendary', name: 'Единорог', rarity: 'красное', image: 'https://cdn-icons-png.flaticon.com/512/1155/1155073.png' },
+        // Оранжевое
+        { id: 'griffin_epic', name: 'Грифон', rarity: 'оранжевое', image: 'https://cdn-icons-png.flaticon.com/512/2855/2855169.png' },
+        { id: 'sphinx_epic', name: 'Сфинкс', rarity: 'оранжевое', image: 'https://cdn-icons-png.flaticon.com/512/2165/2165039.png' },
+        { id: 'minotaur_epic', name: 'Минотавр', rarity: 'оранжевое', image: 'https://cdn-icons-png.flaticon.com/512/2165/2165037.png' },
+        // Желтое
+        { id: 'wolf_rare', name: 'Снежный Волк', rarity: 'желтое', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049282.png' },
+        { id: 'fox_rare', name: 'Хитрая Лиса', rarity: 'желтое', image: 'https://cdn-icons-png.flaticon.com/512/1070/1070220.png' },
+        { id: 'owl_rare', name: 'Мудрый Филин', rarity: 'желтое', image: 'https://cdn-icons-png.flaticon.com/512/2619/2619721.png' },
+        // Зеленое
+        { id: 'bear_uncommon', name: 'Бурый Медведь', rarity: 'зеленое', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049286.png' },
+        { id: 'deer_uncommon', name: 'Благородный Олень', rarity: 'зеленое', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049272.png' },
+        { id: 'rabbit_uncommon', name: 'Быстрый Заяц', rarity: 'зеленое', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049266.png' },
+        // Голубое
+        { id: 'dog_special', name: 'Верный Пёс', rarity: 'голубое', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049289.png' },
+        { id: 'cat_special', name: 'Грациозный Кот', rarity: 'голубое', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049270.png' },
+        { id: 'parrot_special', name: 'Говорящий Попугай', rarity: 'голубое', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049297.png' },
+        // Синее
+        { id: 'pig_common_plus', name: 'Веселый Поросёнок', rarity: 'синее', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049301.png' },
+        { id: 'cow_common_plus', name: 'Мирная Корова', rarity: 'синее', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049271.png' },
+        { id: 'chicken_common_plus', name: 'Курица-несушка', rarity: 'синее', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049268.png' },
+        // Фиолетовое
+        { id: 'mouse_common', name: 'Маленькая Мышка', rarity: 'фиолетовое', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049293.png' },
+        { id: 'frog_common', name: 'Зелёная Лягушка', rarity: 'фиолетовое', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049277.png' },
+        { id: 'fish_common', name: 'Золотая Рыбка', rarity: 'фиолетовое', image: 'https://cdn-icons-png.flaticon.com/512/2049/2049276.png' }
     ];
 
     const CLICKER_UPGRADE_COSTS = [
-        0, // Óðîâåíü 1 (áåñïëàòíî)
-        10, // Óðîâåíü 2
-        40, // Óðîâåíü 3
-        90, // Óðîâåíü 4
-        160, // Óðîâåíü 5
-        250, // Óðîâåíü 6
-        360, // Óðîâåíü 7
-        490, // Óðîâåíü 8
-        640, // Óðîâåíü 9
-        810  // Óðîâåíü 10
+        0, // Уровень 1 (бесплатно)
+        10, // Уровень 2
+        40, // Уровень 3
+        90, // Уровень 4
+        160, // Уровень 5
+        250, // Уровень 6
+        360, // Уровень 7
+        490, // Уровень 8
+        640, // Уровень 9
+        810  // Уровень 10
     ];
 
-    // Ïðîìîêîäû (Â ðåàëüíîé àïïêå ýòî áóäåò íà ñåðâåðå)
+    // Промокоды (В реальной аппке это будет на сервере)
     const PROMO_CODES = {
-        "WELCOMEBONUS": { strawberries: 500, used: false, message: "Ïðèâåòñòâåííûé áîíóñ 500 êëóáíèê!" },
-        "FREESPIN": { spins: 1, used: false, message: "Áåñïëàòíàÿ êðóòêà ïîëó÷åíà!" },
-        "LUCKY2026": { strawberries: 1000, used: false, message: "Áîíóñ ê óäà÷íîìó ãîäó: 1000 êëóáíèê!" },
+        "WELCOMEBONUS": { strawberries: 500, used: false, message: "Приветственный бонус 500 клубник!" },
+        "FREESPIN": { spins: 1, used: false, message: "Бесплатная крутка получена!" },
+        "LUCKY2026": { strawberries: 1000, used: false, message: "Бонус к удачному году: 1000 клубник!" },
     };
 
 
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         strawberries: 0,
         animalsOwned: [], // Array of animal objects
         clickerLevel: 1,
-        pityCounters: {}, // { 'êðàñíîå': 0, 'îðàíæåâîå': 0, ... }
+        pityCounters: {}, // { 'красное': 0, 'оранжевое': 0, ... }
         redGuaranteedBanner: true, // True if the next red guarantees banner animal
         stats: {
             totalClicks: 0,
@@ -129,9 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
             pityPulls: 0, // Pulls that activated pity
         },
         promoCodesUsed: {}, // { "CODE": true }
-        userId: Telegram.WebApp.initDataUnsafe?.user?.id || 'guest_' + Math.random().toString(36).substring(2, 11), // Óíèêàëüíûé ID äëÿ ñîõðàíåíèÿ
-        userName: Telegram.WebApp.initDataUnsafe?.user?.first_name || 'Èãðîê',
-        userAvatar: `https://api.adorable-avatars.com/avatars/100/${Telegram.WebApp.initDataUnsafe?.user?.id || 'guest'}.png` // Ïðèìåð
+        userId: Telegram.WebApp.initDataUnsafe?.user?.id || 'guest_' + Math.random().toString(36).substring(2, 11), // Уникальный ID для сохранения
+        userName: Telegram.WebApp.initDataUnsafe?.user?.first_name || 'Игрок',
+        userAvatar: `https://api.adorable-avatars.com/avatars/100/${Telegram.WebApp.initDataUnsafe?.user?.id || 'guest'}.png` // Пример
     };
 
     // Initialize rarity pity counters
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI() {
-        strawberryCountElem.textContent = `?? ${userData.strawberries}`;
+        strawberryCountElem.textContent = `🍓 ${userData.strawberries}`;
         updateHomeSection();
         updateGameSection();
         updateProfileSection();
@@ -182,9 +182,9 @@ document.addEventListener('DOMContentLoaded', () => {
             noAnimalsMessage.style.display = 'block';
         } else {
             noAnimalsMessage.style.display = 'none';
-            // Ñîðòèðîâêà ïî ðåäêîñòè
+            // Сортировка по редкости
             const sortedAnimals = [...userData.animalsOwned].sort((a, b) => {
-                const rarityOrder = ['êðàñíîå', 'îðàíæåâîå', 'æåëòîå', 'çåëåíîå', 'ãîëóáîå', 'ñèíåå', 'ôèîëåòîâîå'];
+                const rarityOrder = ['красное', 'оранжевое', 'желтое', 'зеленое', 'голубое', 'синее', 'фиолетовое'];
                 return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
             });
 
@@ -209,12 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const nextLevel = userData.clickerLevel + 1;
         if (nextLevel <= 10) {
             const cost = CLICKER_UPGRADE_COSTS[nextLevel - 1];
-            upgradeCostInfo.textContent = `Ñëåäóþùèé óðîâåíü: ${nextLevel} (+${nextLevel} ?? çà êëèê), Ñòîèìîñòü: ${cost} ??`;
-            upgradeClickerBtn.textContent = `Óëó÷øèòü (${cost} ??)`;
+            upgradeCostInfo.textContent = `Следующий уровень: ${nextLevel} (+${nextLevel} 🍓 за клик), Стоимость: ${cost} 🍓`;
+            upgradeClickerBtn.textContent = `Улучшить (${cost} 🍓)`;
             upgradeClickerBtn.disabled = userData.strawberries < cost;
         } else {
-            upgradeCostInfo.textContent = 'Êëóáíèêà ïðîêà÷àíà äî ìàêñèìàëüíîãî óðîâíÿ!';
-            upgradeClickerBtn.textContent = 'Ìàêñ. óðîâåíü';
+            upgradeCostInfo.textContent = 'Клубника прокачана до максимального уровня!';
+            upgradeClickerBtn.textContent = 'Макс. уровень';
             upgradeClickerBtn.disabled = true;
         }
     }
@@ -234,14 +234,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updatePityDisplay() {
         pityList.innerHTML = '';
-        const rarityOrder = ['êðàñíîå', 'îðàíæåâîå', 'æåëòîå', 'çåëåíîå', 'ãîëóáîå', 'ñèíåå']; // Ôèîëåòîâîå áåç ïèòè
+        const rarityOrder = ['красное', 'оранжевое', 'желтое', 'зеленое', 'голубое', 'синее']; // Фиолетовое без пити
 
         rarityOrder.forEach(rarityKey => {
             const pityThreshold = RARITIES[rarityKey].pity;
             if (pityThreshold > 0) {
                 const remaining = pityThreshold - userData.pityCounters[rarityKey];
                 const listItem = document.createElement('li');
-                listItem.textContent = `${RARITIES[rarityKey].name}: ${remaining <= 0 ? 'Ãàðàíò!' : `${remaining} êðóòîê`}`;
+                listItem.textContent = `${RARITIES[rarityKey].name}: ${remaining <= 0 ? 'Гарант!' : `${remaining} круток`}`;
                 if (remaining <= 0) {
                     listItem.style.backgroundColor = '#ffd700'; // Gold for guaranteed
                     listItem.style.color = '#333';
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 saveUserData();
                 updateUI();
             } else {
-                Telegram.WebApp.showAlert('Íåäîñòàòî÷íî êëóáíèêè äëÿ óëó÷øåíèÿ!');
+                Telegram.WebApp.showAlert('Недостаточно клубники для улучшения!');
             }
         }
     });
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let isPityPull = false;
 
         // Check for pity, from rarest to common
-        const rarityOrder = ['êðàñíîå', 'îðàíæåâîå', 'æåëòîå', 'çåëåíîå', 'ãîëóáîå', 'ñèíåå'];
+        const rarityOrder = ['красное', 'оранжевое', 'желтое', 'зеленое', 'голубое', 'синее'];
         for (const rarityKey of rarityOrder) {
             const pityThreshold = RARITIES[rarityKey].pity;
             if (pityThreshold > 0 && userData.pityCounters[rarityKey] >= pityThreshold) {
@@ -341,17 +341,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getAnimalByRarity(rarity) {
         const availableAnimals = ANIMALS.filter(animal => animal.rarity === rarity);
-        if (rarity === 'êðàñíîå') {
+        if (rarity === 'красное') {
             const bannerAnimal = ANIMALS.find(animal => animal.id === BANNER_ANIMAL_ID);
-            // Åñëè ãàðàíòèðîâàí áàííåðíûé èëè ýòî ïåðâàÿ ëåãà
+            // Если гарантирован баннерный или это первая лега
             if (userData.redGuaranteedBanner) {
-                userData.redGuaranteedBanner = false; // Ñëåäóþùàÿ êðàñíàÿ íå ãàðàíòèðóåò áàííåð
+                userData.redGuaranteedBanner = false; // Следующая красная не гарантирует баннер
                 return bannerAnimal;
             } else {
-                // Âûïàëà êðàñíàÿ, íî íå áàííåð
+                // Выпала красная, но не баннер
                 const otherRedAnimals = availableAnimals.filter(animal => animal.id !== BANNER_ANIMAL_ID);
                 const chosen = otherRedAnimals[Math.floor(Math.random() * otherRedAnimals.length)];
-                userData.redGuaranteedBanner = true; // Ñëåäóþùàÿ êðàñíàÿ áóäåò ãàðàíòèðîâàòü áàííåð
+                userData.redGuaranteedBanner = true; // Следующая красная будет гарантировать баннер
                 return chosen;
             }
         } else {
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function spinGacha(numSpins) {
         const totalCost = numSpins * GACHA_COST_PER_SPIN;
         if (userData.strawberries < totalCost) {
-            Telegram.WebApp.showAlert('Íåäîñòàòî÷íî êëóáíèêè äëÿ êðóòêè!');
+            Telegram.WebApp.showAlert('Недостаточно клубники для крутки!');
             return;
         }
 
@@ -414,20 +414,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // For 10 pulls, might show a summary of all animals pulled
         if (numSpins > 1) {
-             Telegram.WebApp.showAlert(`Âû âûáèëè ${results.length} ïèòîìöåâ! Ïîñëåäíèé: ${finalAnimal.name} (${RARITIES[finalAnimal.rarity].name})`);
+             Telegram.WebApp.showAlert(`Вы выбили ${results.length} питомцев! Последний: ${finalAnimal.name} (${RARITIES[finalAnimal.rarity].name})`);
         }
     }
 
     // Function to get the target rotation for a rarity
     function getRotationForRarity(rarity) {
         const rarityAngles = {
-            'ôèîëåòîâîå': 0,
-            'ñèíåå': 51.4,
-            'ãîëóáîå': 102.8,
-            'çåëåíîå': 154.2,
-            'æåëòîå': 205.6,
-            'îðàíæåâîå': 257,
-            'êðàñíîå': 308.4
+            'фиолетовое': 0,
+            'синее': 51.4,
+            'голубое': 102.8,
+            'зеленое': 154.2,
+            'желтое': 205.6,
+            'оранжевое': 257,
+            'красное': 308.4
         };
         // We want the indicator to point *at* the segment.
         // The segments are rotated, so we need to calculate an appropriate stopping point.
@@ -472,13 +472,13 @@ document.addEventListener('DOMContentLoaded', () => {
     activatePromoBtn.addEventListener('click', () => {
         const code = promoCodeInput.value.trim().toUpperCase();
         if (!code) {
-            promoMessage.textContent = 'Ââåäèòå ïðîìîêîä.';
+            promoMessage.textContent = 'Введите промокод.';
             promoMessage.style.color = 'orange';
             return;
         }
 
         if (userData.promoCodesUsed[code]) {
-            promoMessage.textContent = 'Ýòîò ïðîìîêîä óæå áûë èñïîëüçîâàí.';
+            promoMessage.textContent = 'Этот промокод уже был использован.';
             promoMessage.style.color = 'red';
             return;
         }
@@ -500,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
             saveUserData();
             updateUI();
         } else {
-            promoMessage.textContent = 'Íåâåðíûé ïðîìîêîä.';
+            promoMessage.textContent = 'Неверный промокод.';
             promoMessage.style.color = 'red';
         }
         promoCodeInput.value = '';
@@ -511,4 +511,3 @@ document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
     showSection('home-section'); // Start on the home section
 });
-
