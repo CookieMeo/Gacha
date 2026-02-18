@@ -108,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Промокоды (В реальной аппке это будет на сервере)
     const PROMO_CODES = {
+        "MEOW": { spins: 40, used: false, message: "" },
         "WELCOMEBONUS": { strawberries: 500, used: false, message: "Приветственный бонус 500 клубник!" },
         "FREESPIN": { spins: 1, used: false, message: "Бесплатная крутка получена!" },
         "LUCKY2026": { strawberries: 1000, used: false, message: "Бонус к удачному году: 1000 клубник!" },
@@ -511,3 +512,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
     showSection('home-section'); // Start on the home section
 });
+
