@@ -1,15 +1,17 @@
+
 const tg = window.Telegram.WebApp;
-const uid = tg.initDataUnsafe.user?.id || 12345;
+const user = tg.initDataUnsafe.user;
+const uid = user?.id || 12345; // Убедитесь, что здесь есть дефолтный ID для отладки, если WebApp не в ТГ
 
-// --- КОНСТАНТЫ ---
-const UPGRADE_COSTS = {
-    2: [10, 2], 3: [40, 3], 4: [90, 4], 5: [160, 5], 6: [250, 6], 
-    7: [360, 7], 8: [490, 8], 9: [640, 9], 10: [810, 10], 11: [4000, 100]
-};
+async function api(path, data) {
+    const res = await fetch('https://gacha-iifj.onrender.com/api' + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    return res.json();
+}
 
-const BUY_SPINS_COST = { 1: 100, 5: 500, 10: 1000, 50: 5000, 100: 10000 };
-
-// !!! ЗАМЕНИ НА ПРАВИЛЬНЫЕ ПУТИ К ТВОИМ ГИФКАМ !!!
 const GIFS = {
     "Красное": "assets/red.gif",
     "Оранжевое": "assets/orange.gif",
@@ -21,11 +23,66 @@ const GIFS = {
     "default": "assets/purple.gif"
 };
 
-document.getElementById('profile-username').innerText = user?.first_name || "Игрок";
-if (user?.photo_url) {
-    document.getElementById('profile-avatar').src = user.photo_url;
+// --- Обновление UI ---
+async function updateUI() {
+    const u = await api('/get_user', { user_id: uid });
+    if (u && u.user_id) { // Проверяем, что пользователь найден
+        document.getElementById('strawberry-count').innerText = u.strawberry;
+        document.getElementById('spins-count').innerText = u.spins;
+        document.getElementById('level-display').innerText = u.click_level;
+        document.getElementById('upgrade-btn').innerText = `Улучшить (${u.click_level === 11 ? 'МАКС' : UPGRADE_COSTS[u.click_level + 1][0]})`;
+
+        // Обновление имени и аватарки в профиле (если есть данные из Telegram)
+        document.getElementById('profile-username').innerText = user?.first_name || u.username || "Игрок";
+        if (user?.photo_url) {
+            document.getElementById('profile-avatar').src = user.photo_url;
+        } else {
+            // Можно поставить дефолтную, если нет ТГ-аватарки
+            document.getElementById('profile-avatar').src = 'assets/default_avatar.png'; 
+        }
+
+        // Статистика
+        const totalRedPulls = u.red_wins + u.red_losses;
+        const winrate = totalRedPulls > 0 ? ((u.red_wins / totalRedPulls) * 100).toFixed(1) : 0;
+        document.getElementById('stat-winrate-gacha').innerText = `${winrate}%`;
+        
+        const avgPulls = u.red_count > 0 ? (u.total_pulls_for_avg_red / u.red_count).toFixed(1) : 0;
+        document.getElementById('stat-avg-red').innerText = avgPulls;
+
+        document.getElementById('stat-spent-straw').innerText = u.spent_strawberry;
+        document.getElementById('stat-spent-spins').innerText = u.spent_spins;
+
+    } else {
+        console.error("Не удалось получить данные пользователя.");
+        // Можно вывести сообщение об ошибке или перенаправить на страницу регистрации
+    }
 }
 
+// --- КЛИКЕР ---
+async function clickStrawberry() {
+    const res = await api('/click', { user_id: uid });
+    if (res.success) {
+        updateUI();
+    } else {
+        alert(res.error || "Ошибка при клике");
+    }
+}
+
+// --- УЛУЧШЕНИЕ ---
+const UPGRADE_COSTS = {
+    1: [0, 1], 2: [10, 2], 3: [40, 3], 4: [90, 4], 5: [160, 5], 
+    6: [250, 6], 7: [360, 7], 8: [490, 8], 9: [640, 9], 10: [810, 10], 11: [4000, 100]
+};
+async function upgradeClicker() {
+    const res = await api('/upgrade', { user_id: uid });
+    if (res.success) {
+        updateUI();
+    } else {
+        alert(res.error || "Неизвестная ошибка при улучшении!");
+    }
+}
+
+// --- ГАЧА ---
 let currentBanner = 1; // 1 - Феникс, 2 - Единорог
 function setBanner(id) {
     currentBanner = id;
@@ -33,168 +90,37 @@ function setBanner(id) {
     document.getElementById('banner-'+id).classList.add('active');
 }
 
-// --- API ЗАПРОСЫ ---
-async function api(path, body) {
-    try {
-        const r = await fetch('/api' + path, {
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body)
-        });
-        return await r.json();
-    } catch (e) { 
-        console.error(`Ошибка API (${path}):`, e);
-        return { success: false }; 
-    }
-}
-
-// --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
-async function updateUI() {
-    const u = await api('/get_user', { user_id: uid });
-    if (!u) return;
-
-    // Обновляем ТЕКСТОВЫЕ значения
-    const setT = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
-    
-    setT('straw-count', u.strawberry);
-    setT('gacha-straw', u.strawberry);
-    setT('spin-count', u.spins);
-    setT('lvl-display', "Уровень " + u.click_level);
-    
-    // Обновляем гаранты
-    setT('p-red', u.pity_red);
-    setT('p-orange', u.pity_orange); // <-- Добавил остальные гаранты
-    setT('p-yellow', u.pity_yellow);
-    setT('p-green', u.pity_green);
-    setT('p-lightblue', u.pity_lightblue);
-    setT('p-blue', u.pity_blue);
-
-    // Кнопка улучшения
-    const upBtn = document.getElementById('upgrade-btn');
-    if (upBtn) {
-        const cost = UPGRADE_COSTS[u.click_level + 1]?.[0]; // Получаем цену
-        if (cost !== undefined) {
-            upBtn.innerText = `Улучшить (${cost} 🍓)`;
-            upBtn.disabled = false;
-        } else {
-            upBtn.innerText = "Макс. уровень";
-            upBtn.disabled = true;
-        }
-    }
-    const totalRed = u.red_wins + u.red_losses;
-    const wr = totalRed > 0 ? ((u.red_wins / totalRed) * 100).toFixed(1) : 0;
-    document.getElementById('stat-winrate-gacha').innerText = wr + "%";
-    
-    // Средняя крутка
-    const avg = u.red_count > 0 ? (u.total_pulls_for_avg_red / u.red_count).toFixed(1) : 0;
-    document.getElementById('stat-avg-red').innerText = avg;
-    
-    document.getElementById('stat-spent-straw').innerText = u.spent_strawberry;
-    document.getElementById('stat-spent-spins').innerText = u.spent_spins;
-    
-    // Обновляем ВСЮ статистику
-    const setStats = (id, val) => {
-        if(document.getElementById(id)) document.getElementById(id).innerText = val;
-    };
-    setStats('stat-pets-obtained', u.total_pets_obtained);
-    setStats('stat-clicks', u.total_clicks);
-    setStats('stat-spent', u.total_spent);
-    setStats('stat-spins-bought', u.total_spins_bought);
-    setStats('stat-gacha-pulls', u.total_gacha_pulls);
-    // winrate пока 0
-    setStats('stat-winrate-gacha', (u.total_pets_obtained / u.total_gacha_pulls * 100).toFixed(1) + "%");
-    setStats('stat-winrate-battle', "0.0%");
-
-    // Если открыта страница "Дом", обновляем инвентарь
-    if (document.getElementById('home').classList.contains('active')) {
-        updateInventory();
-    }
-}
-
-// --- ОБНОВЛЕНИЕ ИНВЕНТАРЯ ---
-async function updateInventory() {
-    const items = await api('/get_inventory', { user_id: uid });
-    const grid = document.getElementById('inventory-grid');
-    if (!grid) return; // Если сетки нет, выходим
-
-    grid.innerHTML = ""; // Очищаем сетку
-
-    // Проверяем, что items - это действительно массив и он не пустой
-    if (Array.isArray(items) && items.length > 0) {
-        items.forEach(item => {
-            grid.innerHTML += `
-                <div class="pet-item ${item.pet_rarity}">
-                    <img src="${item.pet_image || 'assets/strawberry.png'}">
-                    <p><b>${item.pet_name}</b></p>
-                    <small>${item.pet_rarity}</small>
-                    <!-- <p class="skill-text">${item.pet_skill}</p> -->
-                </div>
-            `;
-        });
+async function buySpins(count) {
+    const res = await api('/buy', { user_id: uid, count: count });
+    if (res.success) {
+        updateUI();
     } else {
-        // Если инвентарь пуст или вернулся не массив
-        grid.innerHTML = `<p style="grid-column: 1/3; text-align: center; color: gray;">Тут пока пусто</p>`;
+        alert(res.error || "Недостаточно клубники для покупки круток!");
     }
 }
 
-async function claimPromo() {
-    const code = document.getElementById('promo-input').value;
-    const res = await api('/claim_promo', { user_id: uid, code: code });
-    alert(res.msg || res.error);
-    updateUI();
-}
-
-// Коллекция (открытие модалки)
-async function openCollection() {
-    const allPets = await api('/get_all_pets', {});
-    const myItems = await api('/get_inventory', { user_id: uid });
-    const myNames = myItems.map(i => i.pet_name);
-    
-    const grid = document.getElementById('collection-grid');
-    grid.innerHTML = "";
-    
-    allPets.forEach(p => {
-        const isHave = myNames.includes(p[0]);
-        grid.innerHTML += `
-            <div class="coll-item ${isHave ? '' : 'gray'}">
-                <img src="${p[2]}">
-                <p>${p[0]}</p>
-            </div>
-        `;
-    });
-    document.getElementById('collection-overlay').classList.remove('hidden');
-}
-
-// --- ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ И НАВИГАЦИЯ ---
-function showPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-
-    document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-nav'));
-    const activeBtn = document.getElementById(id + '-btn');
-    if (activeBtn) activeBtn.classList.add('active-nav');
-
-    updateUI(); // Обновляем данные при смене страницы
-}
-
-// --- ГАЧА: КРУТКИ И АНИМАЦИЯ ---
 async function spin(count) {
-    const res = await api('/spin', { user_id: uid, count: count });
+    const res = await api('/spin', { user_id: uid, count: count, banner_id: currentBanner });
     
     if (!res.success) {
-        console.log("Ошибка сервера:", res); // Поможет отладить
-        return alert(res.error || "Ошибка при крутке");
+        alert(res.error || "Ошибка при крутке!");
+        updateUI(); // Обновим UI, чтобы показать актуальное количество круток
+        return;
     }
 
-    const mainPet = res.pets[0]; // Теперь тут точно есть данные
+    if (!res.pets || res.pets.length === 0) {
+        alert("Не удалось получить питомца.");
+        updateUI();
+        return;
+    }
+
+    const mainPet = res.pets[0]; // Берем первого питомца (для анимации)
     
-    // Показываем оверлей
     const overlay = document.getElementById('gacha-overlay');
     overlay.classList.remove('hidden');
     document.getElementById('res-card').classList.add('hidden');
     document.getElementById('anim-box').classList.remove('hidden');
     
-    // Ставим гифку редкости
     document.getElementById('gacha-gif').src = GIFS[mainPet.rarity] || GIFS.default;
 
     setTimeout(() => {
@@ -203,69 +129,56 @@ async function spin(count) {
         document.getElementById('res-img').src = mainPet.image_url;
         document.getElementById('res-name').innerText = mainPet.name;
         document.getElementById('res-rarity').innerText = mainPet.rarity;
-        updateUI();
+        updateUI(); // Обновляем UI после получения питомца
     }, 5000); 
 }
 
-function closeGacha() {
-    document.getElementById('gacha-overlay').classList.add('hidden');
+// --- ПРОМОКОДЫ ---
+async function claimPromo() {
+    const code = document.getElementById('promo-input').value;
+    const res = await api('/claim_promo', { user_id: uid, code: code });
+    if (res.success) {
+        alert(res.msg);
+    } else {
+        alert(res.error || "Ошибка при активации промокода");
+    }
+    updateUI();
 }
 
-// --- ПОКУПКА КРУТОК ---
-async function buy(count) {
-    const cost = BUY_SPINS_COST[count];
-    if (!cost) return alert("Неверное количество");
+// --- КОЛЛЕКЦИЯ ---
+async function openCollection() {
+    const allPetsRaw = await api('/get_all_pets', {});
+    const myItemsRaw = await api('/get_inventory', { user_id: uid });
+
+    // Преобразуем список всех питомцев в удобный формат
+    const allPets = allPetsRaw.map(p => ({
+        name: p.name,
+        rarity: p.rarity,
+        image_url: p.image_url,
+        is_event: p.is_event,
+        skill: p.skill
+    }));
     
-    const res = await api('/buy', { user_id: uid, count: count });
-    if (res.success) {
-        updateUI(); // Обновляем отображение клубники и круток
-    } else {
-        alert("Недостаточно клубники!");
-    }
+    const myPetNames = new Set(myItemsRaw.map(i => i.pet_name)); // Быстрый поиск
+    
+    const grid = document.getElementById('collection-grid');
+    grid.innerHTML = "";
+    
+    allPets.forEach(p => {
+        const isHave = myPetNames.has(p.name);
+        grid.innerHTML += `
+            <div class="coll-item ${isHave ? '' : 'gray'}">
+                <img src="${p.image_url}" alt="${p.name}">
+                <p><b>${p.name}</b></p>
+                <small>${p.rarity}</small>
+            </div>
+        `;
+    });
+    document.getElementById('collection-overlay').classList.remove('hidden');
 }
 
-// --- УЛУЧШЕНИЕ КЛИКЕРА ---
-async function upgradeClicker() {
-    const res = await api('/upgrade', { user_id: uid });
-    if (res.success) {
-        updateUI();
-    } else {
-        // Если res.success == false, значит была ошибка на сервере
-        alert(res.error || "Мало клубники или достигнут макс. уровень!");
-    }
-}
 
 // --- ИНИЦИАЛИЗАЦИЯ ---
 document.addEventListener('DOMContentLoaded', () => {
-    tg.expand();
-    
-    // Навигация
-    document.getElementById('home-btn').onclick = () => showPage('home');
-    document.getElementById('gacha-btn').onclick = () => showPage('gacha');
-    document.getElementById('game-btn').onclick = () => showPage('game');
-    document.getElementById('profile-btn').onclick = () => showPage('profile');
-
-    // Кнопки игры
-    const collectBtn = document.getElementById('collect-btn');
-    if(collectBtn) collectBtn.onclick = async () => {
-        await api('/click', { user_id: uid });
-        updateUI();
-    };
-
-    const upgradeBtn = document.getElementById('upgrade-btn');
-    if(upgradeBtn) upgradeBtn.onclick = upgradeClicker;
-
-    // Кнопки гачи
-    if(document.getElementById('spin-1')) document.getElementById('spin-1').onclick = () => spin(1);
-    if(document.getElementById('spin-10')) document.getElementById('spin-10').onclick = () => spin(10);
-
-    // Кнопки покупки круток
-    document.querySelectorAll('.shop button').forEach(btn => {
-        const count = parseInt(btn.innerText.split('(')[0].replace('+','').trim());
-        if (!isNaN(count)) {
-            btn.onclick = () => buy(count);
-        }
-    });
-
-    updateUI(); // Первоначальное обновление интерфейса
+    updateUI();
 });
