@@ -131,8 +131,9 @@ function showPage(id) {
 async function spin(count) {
     const res = await api('/spin', { user_id: uid, count: count });
     
-    if (!res.success || !res.pets || res.pets.length === 0) {
-        return alert(res.error || "Не удалось получить питомца");
+    if (!res.success) {
+        console.log("Ошибка сервера:", res); // Поможет отладить
+        return alert(res.error || "Ошибка при крутке");
     }
 
     const mainPet = res.pets[0]; // Теперь тут точно есть данные
