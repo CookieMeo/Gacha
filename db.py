@@ -1,16 +1,36 @@
 import sqlite3
 import random
 
-DB_NAME = 'gacha_v8.db'
+DB_NAME = 'gacha_v9.db'
 
 PETS_DATA = [
-    ("Огненный Дракон", "Красное", "assets/dragon.png", 1, "Огонь"),
-    ("Рыжий Лис", "Оранжевое", "assets/fox.png", 0, "Скорость"),
-    ("Золотой Хомяк", "Жёлтое", "assets/hamster.png", 0, "Богатство"),
-    ("Зеленый Ежик", "Зеленое", "assets/hedgehog.png", 0, "Колючки"),
-    ("Голубой Птиц", "Голубое", "assets/bird.png", 0, "Песня"),
-    ("Ледяной Кот", "Синее", "assets/ice_cat.png", 0, "Заморозка"),
-    ("Фиолетовый Кристалл", "Фиолетовое", "assets/purple.png", 0, "Свет"),
+    ("Собака", "Фиолетовое", "assets/pets/dog.png", 0, ""),
+    ("Кошка", "Фиолетовое", "assets/pets/cat.png", 0, ""),
+    ("Божья коровка", "Фиолетовое", "assets/pets/ladybag.png", 0, ""),
+    
+    ("Мышь", "Синее", "assets/pets/mouse.png", 0, ""),
+    ("Хомяк", "Синее", "assets/pets/hamster.png", 0, ""),
+    
+    ("Кролик", "Голубое", "assets/pets/bunny.png", 0, ""),
+    ("Улитка", "Голубое", "assets/pets/snail.png", 0, ""),
+    ("Пчела", "Голубое", "assets/pets/bee.png", 0, ""),
+    
+    ("Черепаха", "Зеленое", "assets/pets/turtle.png", 0, ""),
+    ("Слон", "Зеленое", "assets/pets/elephant.png", 0, ""),
+    ("Медведь", "Зеленое", "assets/pets/bear.png", 0, ""),
+    
+    ("Змея", "Желтое", "assets/pets/snake.png", 0, ""),
+    ("Попугай", "Желтое", "assets/pets/parrot.png", 0, ""),
+    ("Жираф", "Желтое", "assets/pets/giraffe.png", 0, ""),
+    
+    ("Летучая мышь", "Оранжевое", "assets/pets/bat.png", 0, ""),
+    ("Акула", "Оранжевое", "assets/pets/shark.png", 0, ""),
+    
+    ("Единорог", "Красное", "assets/pets/unicorn.png", 0, ""),
+    ("Дракон", "Красное", "assets/pets/dragon.png", 0, ""),
+    ("Паук", "Красное", "assets/pets/spider.png", 0, ""),
+    ("Феникс", "Красное", "assets/pets/phoenix.png", 1, ""),
+    ("Цербер", "Красное", "assets/pets/cerberus.png", 1, "")
 ]
 
 def init_db():
