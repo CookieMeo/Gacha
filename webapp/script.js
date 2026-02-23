@@ -180,7 +180,8 @@ async function upgradeClicker() {
     if (res.success) {
         updateUI();
     } else {
-        alert("Мало клубники или достигнут макс. уровень!");
+        // Если res.success == false, значит была ошибка на сервере
+        alert(res.error || "Мало клубники или достигнут макс. уровень!");
     }
 }
 
