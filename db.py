@@ -1,8 +1,7 @@
 import sqlite3
 import random
 
-# ОБЯЗАТЕЛЬНО: одно имя файла для всех
-DB_NAME = 'gacha_v4.db' 
+DB_NAME = 'gacha_v6.db' # Сменим имя еще раз для чистоты
 
 PETS_DATA = [
     ("Собака", "Фиолетовое", "assets/pets/dog.png", 0, ""),
@@ -20,9 +19,9 @@ PETS_DATA = [
     ("Слон", "Зеленое", "assets/pets/elephant.png", 0, ""),
     ("Медведь", "Зеленое", "assets/pets/bear.png", 0, ""),
     
-    ("Змея", "Жёлтое", "assets/pets/snake.png", 0, ""),
-    ("Попугай", "Жёлтое", "assets/pets/parrot.png", 0, ""),
-    ("Жираф", "Жёлтое", "assets/pets/giraffe.png", 0, ""),
+    ("Змея", "Желтое", "assets/pets/snake.png", 0, ""),
+    ("Попугай", "Желтое", "assets/pets/parrot.png", 0, ""),
+    ("Жираф", "Желтое", "assets/pets/giraffe.png", 0, ""),
     
     ("Летучая мышь", "Оранжевое", "assets/pets/bat.png", 0, ""),
     ("Акула", "Оранжевое", "assets/pets/shark.png", 0, ""),
@@ -37,7 +36,6 @@ PETS_DATA = [
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    # Таблица пользователей со ВСЕЙ статистикой
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (
         user_id INTEGER PRIMARY KEY, username TEXT, strawberry INTEGER DEFAULT 0, spins INTEGER DEFAULT 0,
         click_level INTEGER DEFAULT 1, 
@@ -70,51 +68,55 @@ def get_user(user_id):
     conn.close()
     return dict(user) if user else None
 
-def create_user(user_id, username):
-    conn = sqlite3.connect(DB_NAME)
-    conn.execute('INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)', (user_id, username))
-    conn.commit()
-    conn.close()
-    
 def do_spins_logic(user_id, count=1):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     u = get_user(user_id)
-    if not u or u['spins'] < count: return {"success": False, "error": "Нет круток!"}
-
+    if not u or u['spins'] < count: 
+        conn.close()
+        return {"success": False, "error": "Нет круток!"}
     results = []
-    p = {'red': u['pity_red'], 'orange': u['pity_orange'], 'yellow': u['pity_yellow'], 
-         'green': u['pity_green'], 'lightblue': u['pity_lightblue'], 'blue': u['pity_blue']}
+    # Загружаем текущие счетчики
+    p = {
+        'red': u.get('pity_red', 50),
+        'orange': u.get('pity_orange', 30),
+        'yellow': u.get('pity_yellow', 15),
+        'green': u.get('pity_green', 10),
+        'lightblue': u.get('pity_lightblue', 5),
+        'blue': u.get('pity_blue', 3)
+    }
     
     for _ in range(count):
         res_rarity = "Фиолетовое"
-        # Логика гарантов
-        if p['red'] <= 1: res_rarity, p['red'] = "Красное", 50
-        elif p['orange'] <= 1: res_rarity, p['orange'] = "Оранжевое", 30
-        elif p['yellow'] <= 1: res_rarity, p['yellow'] = "Жёлтое", 15
-        elif p['green'] <= 1: res_rarity, p['green'] = "Зеленое", 10
-        elif p['lightblue'] <= 1: res_rarity, p['lightblue'] = "Голубое", 5
-        elif p['blue'] <= 1: res_rarity, p['blue'] = "Синее", 3
-        else:
-            # Если не гарант, уменьшаем все счетчики
-            for k in p: p[k] -= 1
+        # Уменьшаем счетчики
+        for k in p: p[k] -= 1
+
+        # Проверка гарантов
+        if p['red'] <= 0: res_rarity, p['red'] = "Красное", 50
+        elif p['orange'] <= 0: res_rarity, p['orange'] = "Оранжевое", 30
+        elif p['yellow'] <= 0: res_rarity, p['yellow'] = "Жёлтое", 15
+        elif p['green'] <= 0: res_rarity, p['green'] = "Зеленое", 10
+        elif p['lightblue'] <= 0: res_rarity, p['lightblue'] = "Голубое", 5
+        elif p['blue'] <= 0: res_rarity, p['blue'] = "Синее", 3
         
-        # Ищем питомца этой редкости
+        # Поиск питомца
         pet = cursor.execute("SELECT name, rarity, image_url, skill FROM pets WHERE rarity=? ORDER BY RANDOM() LIMIT 1", (res_rarity,)).fetchone()
         
-        # ЕСЛИ ВДРУГ НЕ НАШЛИ (на всякий случай)
+        # ЗАЩИТА: Если питомца такой редкости нет, берем любого случайного
         if not pet:
             pet = cursor.execute("SELECT name, rarity, image_url, skill FROM pets ORDER BY RANDOM() LIMIT 1").fetchone()
+        
+        if pet:
+            cursor.execute("INSERT INTO user_inventory (user_id, pet_name, pet_rarity, pet_image, pet_skill) VALUES (?, ?, ?, ?, ?)",
+                           (user_id, pet[0], pet[1], pet[2], pet[3]))
+            results.append({"name": pet[0], "rarity": pet[1], "image_url": pet[2]})
 
-        cursor.execute("INSERT INTO user_inventory (user_id, pet_name, pet_rarity, pet_image, pet_skill) VALUES (?, ?, ?, ?, ?)",
-                       (user_id, pet[0], pet[1], pet[2], pet[3]))
-        results.append({"name": pet[0], "rarity": pet[1], "image_url": pet[2]})
-
+    # Обновляем данные пользователя
     cursor.execute('''UPDATE users SET spins=spins-?, pity_red=?, pity_orange=?, pity_yellow=?, 
                       pity_green=?, pity_lightblue=?, pity_blue=?, 
                       total_gacha_pulls=total_gacha_pulls+?, total_pets_obtained=total_pets_obtained+? WHERE user_id=?''',
                    (count, p['red'], p['orange'], p['yellow'], p['green'], p['lightblue'], p['blue'], count, count, user_id))
+    
     conn.commit()
     conn.close()
     return {"success": True, "pets": results}
-
