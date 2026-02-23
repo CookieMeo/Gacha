@@ -20,9 +20,9 @@ PETS_DATA = [
     ("Слон", "Зеленое", "assets/pets/elephant.png", 0, ""),
     ("Медведь", "Зеленое", "assets/pets/bear.png", 0, ""),
     
-    ("Змея", "Желтое", "assets/pets/snake.png", 0, ""),
-    ("Попугай", "Желтое", "assets/pets/parrot.png", 0, ""),
-    ("Жираф", "Желтое", "assets/pets/giraffe.png", 0, ""),
+    ("Змея", "Жёлтое", "assets/pets/snake.png", 0, ""),
+    ("Попугай", "Жёлтое", "assets/pets/parrot.png", 0, ""),
+    ("Жираф", "Жёлтое", "assets/pets/giraffe.png", 0, ""),
     
     ("Летучая мышь", "Оранжевое", "assets/pets/bat.png", 0, ""),
     ("Акула", "Оранжевое", "assets/pets/shark.png", 0, ""),
@@ -75,6 +75,7 @@ def create_user(user_id, username):
     conn.execute('INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)', (user_id, username))
     conn.commit()
     conn.close()
+    
 def do_spins_logic(user_id, count=1):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -87,6 +88,7 @@ def do_spins_logic(user_id, count=1):
     
     for _ in range(count):
         res_rarity = "Фиолетовое"
+        # Логика гарантов
         if p['red'] <= 1: res_rarity, p['red'] = "Красное", 50
         elif p['orange'] <= 1: res_rarity, p['orange'] = "Оранжевое", 30
         elif p['yellow'] <= 1: res_rarity, p['yellow'] = "Жёлтое", 15
@@ -94,13 +96,19 @@ def do_spins_logic(user_id, count=1):
         elif p['lightblue'] <= 1: res_rarity, p['lightblue'] = "Голубое", 5
         elif p['blue'] <= 1: res_rarity, p['blue'] = "Синее", 3
         else:
+            # Если не гарант, уменьшаем все счетчики
             for k in p: p[k] -= 1
         
+        # Ищем питомца этой редкости
         pet = cursor.execute("SELECT name, rarity, image_url, skill FROM pets WHERE rarity=? ORDER BY RANDOM() LIMIT 1", (res_rarity,)).fetchone()
-        if pet:
-            cursor.execute("INSERT INTO user_inventory (user_id, pet_name, pet_rarity, pet_image, pet_skill) VALUES (?, ?, ?, ?, ?)",
-                           (user_id, pet[0], pet[1], pet[2], pet[3]))
-            results.append({"name": pet[0], "rarity": pet[1], "image_url": pet[2]})
+        
+        # ЕСЛИ ВДРУГ НЕ НАШЛИ (на всякий случай)
+        if not pet:
+            pet = cursor.execute("SELECT name, rarity, image_url, skill FROM pets ORDER BY RANDOM() LIMIT 1").fetchone()
+
+        cursor.execute("INSERT INTO user_inventory (user_id, pet_name, pet_rarity, pet_image, pet_skill) VALUES (?, ?, ?, ?, ?)",
+                       (user_id, pet[0], pet[1], pet[2], pet[3]))
+        results.append({"name": pet[0], "rarity": pet[1], "image_url": pet[2]})
 
     cursor.execute('''UPDATE users SET spins=spins-?, pity_red=?, pity_orange=?, pity_yellow=?, 
                       pity_green=?, pity_lightblue=?, pity_blue=?, 
@@ -109,3 +117,4 @@ def do_spins_logic(user_id, count=1):
     conn.commit()
     conn.close()
     return {"success": True, "pets": results}
+
