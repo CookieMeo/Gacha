@@ -7,7 +7,7 @@ const UPGRADE_COSTS = {
     7: [360, 7], 8: [490, 8], 9: [640, 9], 10: [810, 10], 11: [4000, 100]
 };
 
-const BUY_SPINS_COST = { 1: 100, 5: 500, 10: 1000, 40: 4000, 100: 10000 };
+const BUY_SPINS_COST = { 1: 100, 5: 500, 10: 1000, 50: 5000, 100: 10000 };
 
 // !!! ЗАМЕНИ НА ПРАВИЛЬНЫЕ ПУТИ К ТВОИМ ГИФКАМ !!!
 const GIFS = {
@@ -93,25 +93,26 @@ async function updateUI() {
 async function updateInventory() {
     const items = await api('/get_inventory', { user_id: uid });
     const grid = document.getElementById('inventory-grid');
-    if (!grid || !items) return;
-    
-    grid.innerHTML = "";
-    if (items.length === 0) {
+    if (!grid) return; // Если сетки нет, выходим
+
+    grid.innerHTML = ""; // Очищаем сетку
+
+    // Проверяем, что items - это действительно массив и он не пустой
+    if (Array.isArray(items) && items.length > 0) {
+        items.forEach(item => {
+            grid.innerHTML += `
+                <div class="pet-item ${item.pet_rarity}">
+                    <img src="${item.pet_image || 'assets/strawberry.png'}">
+                    <p><b>${item.pet_name}</b></p>
+                    <small>${item.pet_rarity}</small>
+                    <!-- <p class="skill-text">${item.pet_skill}</p> -->
+                </div>
+            `;
+        });
+    } else {
+        // Если инвентарь пуст или вернулся не массив
         grid.innerHTML = `<p style="grid-column: 1/3; text-align: center; color: gray;">Тут пока пусто</p>`;
-        return;
     }
-    
-    items.forEach((item, index) => {
-        // Добавляем 'skill-text' для навыка, но пока скрытый
-        grid.innerHTML += `
-            <div class="pet-item ${item.pet_rarity}">
-                <img src="${item.pet_image || 'assets/strawberry.png'}">
-                <p><b>${item.pet_name}</b></p>
-                <small>${item.pet_rarity}</small>
-                <!-- <p class="skill-text">${item.pet_skill}</p> -->
-            </div>
-        `;
-    });
 }
 
 // --- ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ И НАВИГАЦИЯ ---
