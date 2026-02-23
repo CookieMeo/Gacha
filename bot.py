@@ -5,9 +5,9 @@ from aiogram.types import WebAppInfo
 from aiohttp import web
 from db import init_db, get_user, create_user, DB_NAME, do_spins_logic
 
-TOKEN = "6912272309:AAH2-y_eB6_L4KqI93oW5tVw071f58eLwU8" # ЗАМЕНИ НА СВОЙ ТОКЕН
-bot = Bot(token=TOKEN)
-dp = Dispatcher()
+TOKEN = "8120653173:AAE6CIrlC_BLOJn8OLRESiiawaZ8QtApvA4" # !!! ЗАМЕНИ НА СВОЙ ТОКЕН !!!
+ADMIN_USER_ID = 1562471251 # !!! ЗАМЕНИ НА СВОЙ ID !!!
+WEB_APP_URL = "https://gacha-iifj.onrender.com" # !!! ПРОВЕРЬ СВОЙ АДРЕС !!!
 
 UPGRADE_COSTS = {
     1: [0, 1], 2: [10, 2], 3: [40, 3], 4: [90, 4], 5: [160, 5], 
