@@ -49,12 +49,17 @@ async def api_get_user(request):
     return web.json_response(u)
 
 async def api_get_inventory(request):
-    uid = (await request.json()).get('user_id')
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    items = conn.execute("SELECT * FROM user_inventory WHERE user_id = ?", (uid,)).fetchall()
-    conn.close()
-    return web.json_response([dict(ix) for ix in items])
+    try:
+        data = await request.json()
+        uid = data.get('user_id')
+        from db import DB_NAME
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite3.Row
+        items = conn.execute("SELECT * FROM user_inventory WHERE user_id = ? ORDER BY id DESC", (uid,)).fetchall()
+        conn.close()
+        return web.json_response([dict(ix) for ix in items])
+    except Exception as e:
+        return web.json_response([], status=200) # Возвращаем пустой список при ошибке
 
 async def api_buy(request):
     data = await request.json()
@@ -85,9 +90,18 @@ async def api_upgrade(request):
     return web.json_response({"success": False})
 
 async def api_spin(request):
-    data = await request.json()
-    return web.json_response(do_spins_logic(data.get('user_id'), data.get('count', 1)))
-
+    try:
+        data = await request.json()
+        uid = data.get('user_id')
+        count = int(data.get('count', 1))
+        
+        # Вызываем логику
+        result = do_spins_logic(uid, count)
+        return web.json_response(result)
+    except Exception as e:
+        print(f"CRITICAL ERROR IN SPIN: {e}")
+        return web.json_response({"success": False, "error": "Ошибка на сервере"}, status=500)
+        
 # --- СЕРВЕР ---
 async def main():
     init_db()
