@@ -93,6 +93,7 @@ async def main():
         app.router.add_post('/api/get_user', api_get_user)
         app.router.add_post('/api/click', api_click)
         app.router.add_post('/api/spin', api_spin)
+        app.router.add_post('/api/upgrade', api_upgrade)
         app.router.add_post('/api/get_inventory', api_get_inventory)
         app.router.add_post('/api/buy', api_buy)
         app.router.add_static('/', path='./webapp', show_index=False)
