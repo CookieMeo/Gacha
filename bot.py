@@ -4,7 +4,9 @@ from aiogram.filters import Command
 from aiohttp import web
 from db import init_db, get_user, create_user, do_spins_logic, DB_NAME # ИМПОРТ ИМЕНИ БАЗЫ
 
-TOKEN = "ТВОЙ_ТОКЕН"
+TOKEN = "8120653173:AAE6CIrlC_BLOJn8OLRESiiawaZ8QtApvA4" # !!! ЗАМЕНИ НА СВОЙ ТОКЕН !!!
+ADMIN_USER_ID = 1562471251 # !!! ЗАМЕНИ НА СВОЙ ID !!!
+WEB_APP_URL = "https://gacha-iifj.onrender.com" # !!! ПРОВЕРЬ СВОЙ АДРЕС !!!
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
