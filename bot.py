@@ -16,20 +16,37 @@ UPGRADE_COSTS = {
 }
 
 # --- API ---
+async def api_click(request):
+    try:
+        data = await request.json()
+        uid = data.get('user_id')
+        u = get_user(uid)
+        
+        # Если пользователя нет (база обновилась), создаем его на лету
+        if not u:
+            create_user(uid, "Player")
+            u = get_user(uid)
+
+        level = u.get('click_level', 1)
+        power = UPGRADE_COSTS.get(level, [0, 1])[1]
+
+        conn = sqlite3.connect(DB_NAME)
+        conn.execute("UPDATE users SET strawberry=strawberry+?, total_clicks=total_clicks+1 WHERE user_id=?", (power, uid))
+        conn.commit()
+        conn.close()
+        return web.json_response({"success": True})
+    except Exception as e:
+        print(f"ERROR IN CLICK: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
 async def api_get_user(request):
     data = await request.json()
-    return web.json_response(get_user(data.get('user_id')))
-
-async def api_click(request):
-    uid = (await request.json()).get('user_id')
+    uid = data.get('user_id')
     u = get_user(uid)
-    power = UPGRADE_COSTS.get(u['click_level'], [0, 1])[1]
-    conn = sqlite3.connect(DB_NAME)
-    # Исправлен запрос: теперь total_clicks точно есть
-    conn.execute("UPDATE users SET strawberry=strawberry+?, total_clicks=total_clicks+1 WHERE user_id=?", (power, uid))
-    conn.commit()
-    conn.close()
-    return web.json_response({"success": True})
+    if not u:
+        create_user(uid, "Player")
+        u = get_user(uid)
+    return web.json_response(u)
 
 async def api_get_inventory(request):
     uid = (await request.json()).get('user_id')
