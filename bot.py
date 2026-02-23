@@ -89,12 +89,6 @@ async def api_spin(request):
         return web.json_response(do_spins_logic(data.get('user_id'), data.get('count', 1)))
     except: return web.json_response({"success": False}, status=500)
 
-@dp.message(Command("start"))
-async def cmd_start(m: types.Message):
-    create_user(m.from_user.id, m.from_user.username)
-    kb = types.ReplyKeyboardMarkup(keyboard=[[types.KeyboardButton(text="🚀 Играть", web_app=WebAppInfo(url="https://gacha-iifj.onrender.com"))]], resize_keyboard=True)
-    await m.answer("Удачи!", reply_markup=kb)
-
 async def main():
     init_db()
     logging.basicConfig(level=logging.INFO)
