@@ -129,38 +129,31 @@ function showPage(id) {
 
 // --- ГАЧА: КРУТКИ И АНИМАЦИЯ ---
 async function spin(count) {
-    console.log(`Кручу гачу x${count}`);
     const res = await api('/spin', { user_id: uid, count: count });
     
-    if (!res.success) {
-        console.error("Ошибка гачи:", res.error);
-        return alert(res.error || "Ошибка при крутке");
+    if (!res.success || !res.pets || res.pets.length === 0) {
+        return alert(res.error || "Не удалось получить питомца");
     }
 
-    const mainPet = res.pets[0]; // Берем первого питомца для гифки
+    const mainPet = res.pets[0]; // Теперь тут точно есть данные
+    
+    // Показываем оверлей
     const overlay = document.getElementById('gacha-overlay');
-    const animBox = document.getElementById('anim-box');
-    const resCard = document.getElementById('res-card');
-    
     overlay.classList.remove('hidden');
-    resCard.classList.add('hidden');
-    animBox.classList.remove('hidden');
+    document.getElementById('res-card').classList.add('hidden');
+    document.getElementById('anim-box').classList.remove('hidden');
     
-    const gifSrc = GIFS[mainPet.rarity] || GIFS.default;
-    console.log(`Анимация для ${mainPet.rarity}: ${gifSrc}`);
-    document.getElementById('gacha-gif').src = gifSrc;
+    // Ставим гифку редкости
+    document.getElementById('gacha-gif').src = GIFS[mainPet.rarity] || GIFS.default;
 
-    // Через 5 секунд показываем результат
     setTimeout(() => {
-        animBox.classList.add('hidden');
-        resCard.classList.remove('hidden');
-        
-        document.getElementById('res-img').src = mainPet.image_url || 'assets/strawberry.png';
+        document.getElementById('anim-box').classList.add('hidden');
+        document.getElementById('res-card').classList.remove('hidden');
+        document.getElementById('res-img').src = mainPet.image_url;
         document.getElementById('res-name').innerText = mainPet.name;
         document.getElementById('res-rarity').innerText = mainPet.rarity;
-        
-        updateUI(); // Обновляем счетчики
-    }, 5000); // 5 секунд анимации
+        updateUI();
+    }, 5000); 
 }
 
 function closeGacha() {
