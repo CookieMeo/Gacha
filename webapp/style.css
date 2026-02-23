@@ -1,384 +1,53 @@
-body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f7f6;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    color: #333;
-    overflow-x: hidden;
-}
+body { font-family: sans-serif; margin: 0; background: #fff; user-select: none; }
 
-.app-container {
-    background-color: #fff;
-    border-radius: 25px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    height: 90vh; /* Используем процентную высоту */
-    max-height: 700px; /* Максимальная высота */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* Скрываем прокрутку основного контейнера */
-    position: relative;
-}
-
-/* Стили для всех видов (страниц) */
-.view {
-    flex-grow: 1;
-    padding: 20px;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    overflow-y: auto; /* Прокрутка только внутри активного вида */
-    -webkit-overflow-scrolling: touch; /* Для плавности на iOS */
-}
-
-.view.active {
-    display: flex;
-}
-
-h1 {
-    color: #ff5c8d;
-    font-size: 2em;
-    margin-bottom: 20px;
-}
-
-.strawberry-img {
-    width: 150px;
-    height: 150px;
-    cursor: pointer;
-    transition: transform 0.1s ease-out;
-}
-
-.strawberry-img:active {
-    transform: scale(0.95);
-}
-
-.strawberry-count {
-    display: flex;
-    align-items: center;
-    font-size: 1.5em;
-    margin: 20px 0;
-    color: #ff5c8d;
-    font-weight: bold;
-}
-
-.strawberry-count img {
-    width: 30px;
-    height: 30px;
-    margin-right: 10px;
-}
-
-.main-button {
-    background-color: #ff5c8d;
-    color: white;
-    border: none;
-    border-radius: 15px;
-    padding: 12px 25px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    margin-top: 15px;
-}
-
-.main-button:hover {
-    background-color: #e04a7c;
-}
+.app { height: 100vh; display: flex; flex-direction: column; }
+.view { display: none; flex: 1; padding: 20px; overflow-y: auto; text-align: center; padding-bottom: 80px; }
+.view.active { display: block; }
 
 /* Навигация */
-.bottom-nav {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    background-color: #f8f8f8;
-    border-top: 1px solid #eee;
-    padding: 10px 0;
-    width: 100%;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+.bottom-nav { 
+    position: fixed; bottom: 0; width: 100%; display: flex; 
+    background: #f8f8f8; border-top: 1px solid #ddd; height: 60px;
 }
+.nav-btn { 
+    flex: 1; border: none; background: none; font-size: 14px; 
+    color: #888; font-weight: bold; cursor: pointer;
+}
+.nav-btn.active { color: var(--pink); border-top: 3px solid var(--pink); }
 
-.nav-button {
-    background: none;
-    border: none;
-    color: #888;
-    font-size: 0.8em;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 5px;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
+/* Кликер */
+.pink-text { color: var(--pink); }
+.strawberry-main { width: 180px; transition: transform 0.1s; cursor: pointer; margin: 30px 0; }
+.strawberry-main:active { transform: scale(0.9); }
+.strawberry-text { font-size: 24px; font-weight: bold; color: var(--pink); margin-bottom: 20px; }
+.btn-upgrade { background: var(--pink); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 18px; }
 
-.nav-button img {
-    width: 24px;
-    height: 24px;
-    margin-bottom: 5px;
-}
+/* Сетка питомцев */
+.pet-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+.pet-card, .coll-item { background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; padding: 10px; }
+.pet-card img, .coll-item img { width: 100%; border-radius: 5px; }
+.coll-item.gray { filter: grayscale(1); opacity: 0.5; }
 
-.nav-button.active {
-    color: #ff5c8d;
-}
-
-/* Гача вид */
-#gacha-view h1, #gacha-view p {
-    margin-top: 0;
-}
-#gacha-view .gacha-buttons, #gacha-view .buy-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
-}
-#gacha-view .gacha-buttons button, #gacha-view .buy-buttons button {
-    background-color: #6a0dad;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-size: 0.9em;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-#gacha-view .buy-buttons button {
-    background-color: #007bff;
-}
-#gacha-view .gacha-buttons button:hover {
-    background-color: #4a0082;
-}
-#gacha-view .buy-buttons button:hover {
-    background-color: #0056b3;
-}
-
-
-/* Оверлей гачи и результаты */
-.overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.hidden {
-    display: none !important;
-}
-
-.gacha-animation, .gacha-result {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 20px;
-    text-align: center;
-    max-width: 80%;
-}
-
-.gacha-animation img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-}
-
-.gacha-result img {
-    max-width: 120px;
-    height: auto;
-    margin-bottom: 10px;
-}
-
-.gacha-result h2 {
-    color: #333;
-    margin-bottom: 5px;
-}
-
-.gacha-result p {
-    color: #ff5c8d;
-    font-weight: bold;
-    font-size: 1.1em;
-}
+/* Гача */
+.banners { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+.banner-btn { padding: 10px 20px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; }
+.banner-btn.active { background: var(--pink); color: white; border-color: var(--pink); }
+.btn-spin { background: var(--purple); color: white; border: none; padding: 12px 20px; border-radius: 10px; margin: 5px; }
+.buy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.buy-grid button { background: var(--blue); color: white; border: none; padding: 10px; border-radius: 5px; }
 
 /* Профиль */
-.profile-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 30px;
-}
+.profile-card { margin-bottom: 20px; }
+.avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--pink); }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.stat-card { background: #f5f5f5; padding: 10px; border-radius: 10px; display: flex; flex-direction: column; }
+.btn-collection { width: 100%; padding: 15px; background: #eee; border: none; border-radius: 10px; font-weight: bold; }
+.promo-box { margin-top: 20px; display: flex; gap: 5px; }
+.promo-box input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 10px; }
 
-.profile-avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #ff5c8d;
-    margin-bottom: 10px;
-}
-
-.profile-stats {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.stat-item {
-    background-color: #f0f0f0;
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
-}
-
-.stat-item p:first-child {
-    font-size: 0.9em;
-    color: #666;
-    margin-bottom: 5px;
-}
-
-.stat-item p:last-child {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #ff5c8d;
-}
-
-.promo-section {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.promo-section h3 {
-    margin-top: 0;
-    color: #333;
-}
-
-.promo-section input {
-    width: 80%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    font-size: 1em;
-}
-
-/* Баннеры гачи */
-.banner-selection {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.banner-btn {
-    background-color: #eee;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 8px 15px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9em;
-}
-
-.banner-btn.active {
-    background-color: #ff5c8d;
-    color: white;
-    border-color: #ff5c8d;
-    box-shadow: 0 2px 8px rgba(255, 92, 141, 0.4);
-}
-
-.banner-btn:hover:not(.active) {
-    background-color: #e0e0e0;
-}
-
-/* Коллекция */
-.collection-window {
-    background: #fff;
-    padding: 20px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 380px;
-    max-height: 80vh; /* Используем vh для адаптивности */
-    overflow-y: auto;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.collection-window h2 {
-    color: #ff5c8d;
-    margin-top: 0;
-    margin-bottom: 20px;
-}
-
-.collection-window .main-button {
-    margin-top: 20px;
-    width: 80%;
-}
-
-.pet-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 10px;
-    width: 100%;
-}
-
-.coll-item {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    padding: 10px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 120px; /* Чтобы все карточки были одной высоты */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.coll-item img {
-    max-width: 60px;
-    max-height: 60px;
-    object-fit: contain;
-    margin-bottom: 5px;
-}
-
-.coll-item p {
-    font-size: 0.85em;
-    font-weight: bold;
-    margin: 0;
-    line-height: 1.2;
-    color: #333;
-}
-
-.coll-item small {
-    font-size: 0.75em;
-    color: #888;
-}
-
-/* Для серых (неполученных) питомцев */
-.coll-item.gray {
-    filter: grayscale(100%);
-    opacity: 0.6;
-    border-color: #ddd;
-}
-.coll-item.gray p, .coll-item.gray small {
-    color: #999;
-}
-
-
-/* Дополнительные стили для счетчиков в профиле (чтобы не было дублирования) */
-#strawberry-count-profile, #spins-count-profile, #level-display-profile {
-    font-weight: bold;
-    color: #ff5c8d; /* Или любой другой цвет */
-}
+/* Оверлеи */
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; }
+.hidden { display: none; }
+.modal { background: white; width: 90%; max-height: 80%; overflow-y: auto; border-radius: 20px; padding: 20px; }
+#res-card { background: white; padding: 30px; border-radius: 20px; text-align: center; }
+#res-card img { width: 150px; }
