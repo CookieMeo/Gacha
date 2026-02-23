@@ -1,0 +1,207 @@
+/* --- БАЗОВЫЕ СТИЛИ --- */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5;
+    color: #333;
+    overflow-x: hidden;
+}
+.page {
+    display: none;
+    padding: 20px;
+    margin-bottom: 80px; /* Место для навигации */
+    text-align: center;
+}
+.page.active {
+    display: block;
+}
+.hidden {
+    display: none !important;
+}
+img { max-width: 100%; }
+
+/* --- НАВИГАЦИЯ --- */
+nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background: white;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+}
+nav button {
+    background: none;
+    border: none;
+    font-size: 12px;
+    color: #888;
+    cursor: pointer;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+nav button.active-nav {
+    color: #ff5c8d; /* Розовый цвет для активной кнопки */
+    font-weight: bold;
+}
+nav button i { /* Если захочешь добавить иконки */
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+/* --- ИГРА (КЛИКЕР) --- */
+#game { padding-top: 50px; }
+#lvl-display { color: #555; font-size: 24px; margin-bottom: 15px; }
+#collect-btn { cursor: pointer; }
+.stats { font-size: 20px; margin: 15px 0; }
+#upgrade-btn {
+    background-color: #ff5c8d;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+#upgrade-btn:hover { background-color: #e64a7a; }
+#upgrade-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+/* --- ГАЧА --- */
+.pity-info, .user-spins {
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #666;
+}
+#gacha-res { margin: 20px 0; font-size: 18px; font-weight: bold; color: #333; }
+.gacha-controls button {
+    background-color: #ff5c8d; color: white; padding: 10px 20px; border: none;
+    border-radius: 15px; font-size: 16px; margin: 0 10px; cursor: pointer;
+}
+.shop { margin-top: 30px; }
+.shop h3 { margin-bottom: 15px; }
+.shop button {
+    background-color: #e0e0e0; color: #333; padding: 8px 15px; border: none;
+    border-radius: 15px; font-size: 14px; margin: 5px; cursor: pointer;
+}
+
+/* --- Оверлей Гачи --- */
+#gacha-overlay {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.9); z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+#anim-box { width: 80%; max-width: 300px; }
+#res-card { text-align: center; animation: zoomIn 0.5s; }
+#res-card img { width: 200px; border-radius: 20px; box-shadow: 0 0 20px white; margin: 10px 0;}
+#res-card h2 { font-size: 28px; margin: 10px 0; }
+#res-card p { font-size: 18px; color: #ccc; }
+#res-card button { /* Стили кнопки "Забрать" */
+    background-color: #4CAF50; /* Зеленая */ color: white; padding: 12px 30px; border: none;
+    border-radius: 25px; font-size: 18px; cursor: pointer; margin-top: 20px;
+}
+
+/* --- ДОМ: ИНВЕНТАРЬ --- */
+#inventory-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 10px;
+}
+.pet-item {
+    background: white;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+.pet-item:hover { transform: translateY(-5px); }
+.pet-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    aspect-ratio: 1/1; /* Делаем квадратным */
+    object-fit: cover; /* Чтобы картинка заполняла, не искажаясь */
+}
+.pet-item p { margin: 8px 0 0; font-size: 14px; }
+.pet-item small { font-size: 12px; color: #777; }
+
+/* Рамки для редкостей */
+.pet-item.Красное { border: 2px solid #ff5c8d; }
+.pet-item.Оранжевое { border: 2px solid #ffb347; }
+.pet-item.Жёлтое { border: 2px solid #ffd700; }
+.pet-item.Зеленое { border: 2px solid #76ff76; }
+.pet-item.Голубое { border: 2px solid #87ceeb; }
+.pet-item.Синее { border: 2px solid #6495ed; }
+.pet-item.Фиолетовое { border: 2px solid #9370db; }
+
+/* --- ПРОФИЛЬ --- */
+.profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+#profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 20px;
+    border: 3px solid #ff5c8d;
+}
+#profile-username { font-size: 26px; margin: 0; }
+
+.profile-content h3 { margin-bottom: 20px; font-size: 22px; color: #555; }
+
+/* --- СТАТИСТИКА --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 колонки */
+    gap: 15px;
+}
+.stat-item {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+}
+.stat-item p:first-child { /* Название статистики */
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 5px;
+}
+.stat-item p:last-child { /* Значение статистики */
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff5c8d;
+}
+
+#collection-btn { /* Кнопка "Коллекция" в профиле */
+    background-color: #ff5c8d;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 30px;
+}
+
+/* --- Анимация --- */
+@keyframes zoomIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
