@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Казино</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+    <!-- НАВИГАЦИЯ ВНИЗУ -->
+    <nav>
+        <button id="home-btn" class="active-nav">🏠 Дом</button>
+        <button id="gacha-btn">🎉 Гача</button>
+        <button id="game-btn">🍓 Игра</button>
+        <button id="profile-btn">👤 Профиль</button>
+    </nav>
+
+    <!-- СТРАНИЦА ДОМ -->
+    <div id="home" class="page active">
+        <h2>Моя Коллекция</h2>
+        <div id="inventory-grid">
+            <!-- Сюда будут добавляться питомцы -->
+        </div>
+    </div>
+
+    <!-- СТРАНИЦА ИГРЫ (КЛИКЕР) -->
+    <div id="game" class="page">
+        <h2 id="lvl-display">Уровень 1</h2>
+        <img src="assets/strawberry.png" id="collect-btn" width="180">
+        <div class="stats">🍓 <span id="straw-count">0</span></div>
+        <button id="upgrade-btn">Улучшить (10 🍓)</button>
+    </div>
+
+    <!-- СТРАНИЦА ГАЧИ -->
+    <div id="gacha" class="page">
+        <div class="pity-info">
+            Красный: <span id="p-red">50</span> | 
+            Оранжевый: <span id="p-orange">30</span> | 
+            Желтый: <span id="p-yellow">15</span> | 
+            Зеленый: <span id="p-green">10</span> | 
+            Голубой: <span id="p-lightblue">5</span> | 
+            Синий: <span id="p-blue">3</span>
+        </div>
+        
+        <div class="user-spins">
+            🌀 Круток: <span id="spin-count">0</span>
+        </div>
+        
+        <div id="gacha-res">Жми крутить!</div>
+        
+        <div class="gacha-controls">
+            <button id="spin-1">x1</button>
+            <button id="spin-10">x10</button>
+        </div>
+        
+        <div class="shop">
+            <h3>Клубника: <span id="gacha-straw">0</span></h3>
+            <button>+1</button> <button>+5</button> <button>+10</button> <button>+40</button> <button>+100</button>
+        </div>
+    </div>
+
+    <!-- СТРАНИЦА ПРОФИЛЯ -->
+    <div id="profile" class="page">
+        <div class="profile-header">
+            <img id="profile-avatar" src="" alt="Аватар">
+            <h2 id="profile-username">Имя пользователя</h2>
+        </div>
+        
+        <div class="profile-content">
+            <h3>Статистика</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <p>Персонажей получено</p>
+                    <p id="stat-pets-obtained">0</p>
+                </div>
+                <div class="stat-item">
+                    <p>Кликов на клубнику</p>
+                    <p id="stat-clicks">0</p>
+                </div>
+                <div class="stat-item">
+                    <p>Винрейт гачи (%)</p>
+                    <p id="stat-winrate-gacha">0.0%</p>
+                </div>
+                 <div class="stat-item">
+                    <p>Винрейт боя (%)</p>
+                    <p id="stat-winrate-battle">0.0%</p>
+                </div>
+                 <div class="stat-item">
+                    <p>Клубники потрачено</p>
+                    <p id="stat-spent">0</p>
+                </div>
+                 <div class="stat-item">
+                    <p>Круток потрачено</p>
+                    <p id="stat-spins-bought">0</p>
+                </div>
+            </div>
+            <button id="collection-btn">Коллекция</button>
+        </div>
+    </div>
+
+    <!-- ОВЕРЛЕЙ ГАЧИ (АНИМАЦИЯ + РЕЗУЛЬТАТ) -->
+    <div id="gacha-overlay" class="hidden">
+        <div id="anim-box"><img id="gacha-gif" src=""></div>
+        <div id="res-card" class="hidden">
+            <img id="res-img" src="">
+            <h2 id="res-name"></h2>
+            <p id="res-rarity"></p>
+            <button onclick="closeGacha()">Забрать</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
