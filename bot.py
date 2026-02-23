@@ -52,6 +52,21 @@ async def api_get_inventory(request):
         return web.json_response([dict(ix) for ix in items])
     except: return web.json_response([])
 
+async def api_upgrade(request):
+    try:
+        uid = (await request.json()).get('user_id')
+        u = get_user(uid)
+        nxt = u['click_level'] + 1
+        cost = UPGRADE_COSTS.get(nxt, [999999, 0])[0]
+        if u['strawberry'] >= cost:
+            conn = sqlite3.connect(DB_NAME)
+            conn.execute("UPDATE users SET strawberry=strawberry-?, click_level=? WHERE user_id=?", (cost, nxt, uid))
+            conn.commit()
+            conn.close()
+            return web.json_response({"success": True})
+        return web.json_response({"success": False})
+    except: return web.json_response({"success": False}, status=500)
+
 async def api_spin(request):
     try:
         data = await request.json()
@@ -93,6 +108,7 @@ async def main():
         app.router.add_post('/api/get_user', api_get_user)
         app.router.add_post('/api/click', api_click)
         app.router.add_post('/api/spin', api_spin)
+        app.router.add_post('/api/upgrade', api_upgrade)
         app.router.add_post('/api/get_inventory', api_get_inventory)
         app.router.add_post('/api/buy', api_buy)
         app.router.add_static('/', path='./webapp', show_index=False)
