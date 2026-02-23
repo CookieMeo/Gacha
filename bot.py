@@ -9,7 +9,7 @@ import json # нужен для работы с json
 # --- КОНФИГУРАЦИЯ ---
 TOKEN = "8120653173:AAE6CIrlC_BLOJn8OLRESiiawaZ8QtApvA4" # !!! ЗАМЕНИ НА СВОЙ ТОКЕН !!!
 ADMIN_USER_ID = 1562471251 # !!! ЗАМЕНИ НА СВОЙ ID !!!
-WEB_APP_URL = "https://gacha2-5ng0.onrender.com" # !!! ПРОВЕРЬ СВОЙ АДРЕС !!!
+WEB_APP_URL = "https://gacha-iifj.onrender.com" # !!! ПРОВЕРЬ СВОЙ АДРЕС !!!
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
