@@ -8,6 +8,8 @@ from db import init_db, get_user, create_user, DB_NAME, do_spins_logic
 TOKEN = "8120653173:AAE6CIrlC_BLOJn8OLRESiiawaZ8QtApvA4" # !!! ЗАМЕНИ НА СВОЙ ТОКЕН !!!
 ADMIN_USER_ID = 1562471251 # !!! ЗАМЕНИ НА СВОЙ ID !!!
 WEB_APP_URL = "https://gacha-iifj.onrender.com" # !!! ПРОВЕРЬ СВОЙ АДРЕС !!!
+dp = Dispatcher()
+init_db()
 
 UPGRADE_COSTS = {
     1: [0, 1], 2: [10, 2], 3: [40, 3], 4: [90, 4], 5: [160, 5], 
@@ -86,6 +88,12 @@ async def api_spin(request):
         data = await request.json()
         return web.json_response(do_spins_logic(data.get('user_id'), data.get('count', 1)))
     except: return web.json_response({"success": False}, status=500)
+
+@dp.message(Command("start"))
+async def cmd_start(m: types.Message):
+    create_user(m.from_user.id, m.from_user.username)
+    kb = types.ReplyKeyboardMarkup(keyboard=[[types.KeyboardButton(text="🚀 Играть", web_app=WebAppInfo(url="https://gacha-iifj.onrender.com"))]], resize_keyboard=True)
+    await m.answer("Удачи!", reply_markup=kb)
 
 async def main():
     init_db()
