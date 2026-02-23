@@ -30,7 +30,7 @@ PETS_DATA = [
     ("Дракон", "Красное", "assets/pets/dragon.png", 0, ""),
     ("Паук", "Красное", "assets/pets/spider.png", 0, ""),
     ("Феникс", "Красное", "assets/pets/phoenix.png", 1, ""),
-    ("Цербер", "Красное", "assets/pets/cerberus.png", 1, "")
+    ("Цербер", "Красное", "assets/pets/cerberus.png", 1, ""),
 ]
 
 def init_db():
