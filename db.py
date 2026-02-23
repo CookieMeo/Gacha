@@ -2,7 +2,7 @@ import sqlite3
 import random
 
 # ОБЯЗАТЕЛЬНО: одно имя файла для всех
-DB_NAME = 'gacha_v3.db' 
+DB_NAME = 'gacha_v4.db' 
 
 PETS_DATA = [
     ("Собака", "Фиолетовое", "assets/pets/dog.png", 0, ""),
