@@ -88,12 +88,41 @@ async def api_buy(request):
         return web.json_response({"success": False})
     except: return web.json_response({"success": False}, status=500)
 
+async def api_claim_promo(request):
+    data = await request.json()
+    uid, code = data.get('user_id'), data.get('code')
+    conn = sqlite3.connect(DB_NAME)
+    promo = conn.execute("SELECT * FROM promo_codes WHERE code=?", (code,)).fetchone()
+    if not promo: return web.json_response({"success": False, "error": "Код не найден"})
+    
+    used = conn.execute("SELECT 1 FROM used_promos WHERE user_id=? AND code=?", (uid, code)).fetchone()
+    if used: return web.json_response({"success": False, "error": "Уже использован"})
+    
+    # Начисляем награду
+    col = "spins" if promo[1] == "spins" else "strawberry"
+    conn.execute(f"UPDATE users SET {col}={col}+? WHERE user_id=?", (promo[2], uid))
+    conn.execute("INSERT INTO used_promos VALUES (?, ?)", (uid, code))
+    conn.commit()
+    return web.json_response({"success": True, "msg": f"Получено: {promo[2]} {promo[1]}"})
+
 # --- ЗАПУСК ---
 @dp.message(Command("start"))
 async def cmd_start(m: types.Message):
     create_user(m.from_user.id, m.from_user.username)
     kb = types.ReplyKeyboardMarkup(keyboard=[[types.KeyboardButton(text="🚀 Играть", web_app=WebAppInfo(url="https://gacha-iifj.onrender.com"))]], resize_keyboard=True)
     await m.answer("Добро пожаловать!", reply_markup=kb)
+
+@dp.message(Command("add_promo"))
+async def add_promo(m: types.Message):
+    if m.from_user.id != 1562471251: return # Твой ID
+    try:
+        # /add_promo КОД ТИП КОЛВО (напр: /add_promo START spins 10)
+        _, code, r_type, amount = m.text.split()
+        conn = sqlite3.connect(DB_NAME)
+        conn.execute("INSERT INTO promo_codes VALUES (?, ?, ?)", (code, r_type, int(amount)))
+        conn.commit()
+        await m.answer(f"✅ Промокод {code} создан!")
+    except: await m.answer("Ошибка! Формат: /add_promo КОД ТИП КОЛВО")
 
 async def main():
     try:
@@ -111,6 +140,8 @@ async def main():
         app.router.add_post('/api/upgrade', api_upgrade)
         app.router.add_post('/api/get_inventory', api_get_inventory)
         app.router.add_post('/api/buy', api_buy)
+        app.router.add_post('/api/claim_promo', api_claim_promo)
+        app.router.add_post('/api/get_all_pets', api_get_all_pets) # Для коллекции
         app.router.add_static('/', path='./webapp', show_index=False)
         
         runner = web.AppRunner(app)
