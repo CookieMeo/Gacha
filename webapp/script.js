@@ -21,6 +21,18 @@ const GIFS = {
     "default": "assets/purple.gif"
 };
 
+document.getElementById('profile-username').innerText = user?.first_name || "Игрок";
+if (user?.photo_url) {
+    document.getElementById('profile-avatar').src = user.photo_url;
+}
+
+let currentBanner = 1; // 1 - Феникс, 2 - Единорог
+function setBanner(id) {
+    currentBanner = id;
+    document.querySelectorAll('.banner-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('banner-'+id).classList.add('active');
+}
+
 // --- API ЗАПРОСЫ ---
 async function api(path, body) {
     try {
@@ -69,6 +81,16 @@ async function updateUI() {
             upBtn.disabled = true;
         }
     }
+    const totalRed = u.red_wins + u.red_losses;
+    const wr = totalRed > 0 ? ((u.red_wins / totalRed) * 100).toFixed(1) : 0;
+    document.getElementById('stat-winrate-gacha').innerText = wr + "%";
+    
+    // Средняя крутка
+    const avg = u.red_count > 0 ? (u.total_pulls_for_avg_red / u.red_count).toFixed(1) : 0;
+    document.getElementById('stat-avg-red').innerText = avg;
+    
+    document.getElementById('stat-spent-straw').innerText = u.spent_strawberry;
+    document.getElementById('stat-spent-spins').innerText = u.spent_spins;
     
     // Обновляем ВСЮ статистику
     const setStats = (id, val) => {
@@ -113,6 +135,34 @@ async function updateInventory() {
         // Если инвентарь пуст или вернулся не массив
         grid.innerHTML = `<p style="grid-column: 1/3; text-align: center; color: gray;">Тут пока пусто</p>`;
     }
+}
+
+async function claimPromo() {
+    const code = document.getElementById('promo-input').value;
+    const res = await api('/claim_promo', { user_id: uid, code: code });
+    alert(res.msg || res.error);
+    updateUI();
+}
+
+// Коллекция (открытие модалки)
+async function openCollection() {
+    const allPets = await api('/get_all_pets', {});
+    const myItems = await api('/get_inventory', { user_id: uid });
+    const myNames = myItems.map(i => i.pet_name);
+    
+    const grid = document.getElementById('collection-grid');
+    grid.innerHTML = "";
+    
+    allPets.forEach(p => {
+        const isHave = myNames.includes(p[0]);
+        grid.innerHTML += `
+            <div class="coll-item ${isHave ? '' : 'gray'}">
+                <img src="${p[2]}">
+                <p>${p[0]}</p>
+            </div>
+        `;
+    });
+    document.getElementById('collection-overlay').classList.remove('hidden');
 }
 
 // --- ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ И НАВИГАЦИЯ ---
