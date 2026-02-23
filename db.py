@@ -1,9 +1,10 @@
 import sqlite3
 import random
 
-DB_NAME = 'gacha_v12.db'
+DB_NAME = 'gacha_v13.db' # Увеличиваем версию, чтобы гарантировать чистую базу
 
 PETS_DATA = [
+    # Ивентовые (is_event 1 для Феникса, 2 для Цербера)
     ("Собака", "Фиолетовое", "assets/pets/dog.png", 0, ""),
     ("Кошка", "Фиолетовое", "assets/pets/cat.png", 0, ""),
     ("Божья коровка", "Фиолетовое", "assets/pets/ladybag.png", 0, ""),
@@ -41,14 +42,15 @@ def init_db():
         click_level INTEGER DEFAULT 1, 
         pity_red INTEGER DEFAULT 50, pity_orange INTEGER DEFAULT 30, pity_yellow INTEGER DEFAULT 15,
         pity_green INTEGER DEFAULT 10, pity_lightblue INTEGER DEFAULT 5, pity_blue INTEGER DEFAULT 3,
-        guaranteed_event INTEGER DEFAULT 0,
+        guaranteed_event INTEGER DEFAULT 0, -- 0 = нет гаранта, 1 = гарант на ивент
         total_clicks INTEGER DEFAULT 0, 
         spent_strawberry INTEGER DEFAULT 0, 
         spent_spins INTEGER DEFAULT 0,
         red_wins INTEGER DEFAULT 0, 
         red_losses INTEGER DEFAULT 0,
-        total_pulls_for_avg_red INTEGER DEFAULT 0,
-        red_count INTEGER DEFAULT 0)''')
+        total_pulls_for_avg_red INTEGER DEFAULT 0, -- Сумма всех пити, когда выпал красный
+        red_count INTEGER DEFAULT 0 -- Сколько раз выпал красный (для средней)
+        )''')
     
     cursor.execute('''CREATE TABLE IF NOT EXISTS pets (
         id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, rarity TEXT, image_url TEXT, 
@@ -69,16 +71,11 @@ def init_db():
     conn.close()
 
 def seed_pets(cursor):
+    # Добавляем питомцев только если таблица пуста
     if cursor.execute("SELECT COUNT(*) FROM pets").fetchone()[0] == 0:
         cursor.executemany("INSERT INTO pets (name, rarity, image_url, is_event, skill) VALUES (?,?,?,?,?)", PETS_DATA)
-    conn.commit()
-    
-def create_user(user_id, username):
-    conn = sqlite3.connect(DB_NAME)
-    conn.execute('INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)', (user_id, str(username)))
-    conn.commit()
-    conn.close()
-    
+    cursor.connection.commit() # Сохраняем изменения после добавления питомцев
+
 def get_user(user_id):
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
@@ -86,59 +83,80 @@ def get_user(user_id):
     conn.close()
     return dict(user) if user else None
 
+def create_user(user_id, username):
+    conn = sqlite3.connect(DB_NAME)
+    # Убеждаемся, что username всегда строка, чтобы не было ошибок
+    conn.execute('INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)', (user_id, str(username)))
+    conn.commit()
+    conn.close()
+
 def do_spins_logic(user_id, count=1, banner_id=1):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     u = get_user(user_id)
-    if not u or u['spins'] < count: return {"success": False, "error": "Нет круток!"}
+    if not u or u['spins'] < count:
+        conn.close()
+        return {"success": False, "error": "Недостаточно круток!"}
 
     results = []
-    p = {'red': u['pity_red'], 'orange': u['pity_orange'], 'yellow': u['pity_yellow'], 
-         'green': u['pity_green'], 'lightblue': u['pity_lightblue'], 'blue': u['pity_blue']}
-    guar = u['guaranteed_event']
+    # Используем .get() с дефолтными значениями для безопасности
+    p = {'red': u.get('pity_red', 50), 'orange': u.get('pity_orange', 30), 'yellow': u.get('pity_yellow', 15),
+         'green': u.get('pity_green', 10), 'lightblue': u.get('pity_lightblue', 5), 'blue': u.get('pity_blue', 3)}
     
-    red_wins, red_losses = 0, 0
+    guar = u.get('guaranteed_event', 0) # 0: нет гаранта на ивентового, 1: есть гарант на ивентового
+    
+    red_wins = 0
+    red_losses = 0
     new_pulls_sum = 0
     new_red_count = 0
 
     for _ in range(count):
-        res_rarity = "Фиолетовое"
-        for k in p: p[k] -= 1
+        res_rarity = "Фиолетовое" # Дефолтная редкость
         
+        # Уменьшаем все счетчики пити
+        for k in p: p[k] -= 1
+
         is_red = False
+        # Проверка на выпадение редкости по пити
         if p['red'] <= 0:
             res_rarity = "Красное"
             is_red = True
-            # Считаем на какой крутке упал красный (50 - текущий пити)
-            new_pulls_sum += (50 - p['red'])
+            new_pulls_sum += (50 - p['red']) # Сколько круток до красного
             new_red_count += 1
-            p['red'] = 50 
+            p['red'] = 50 # Сбрасываем пити
         elif p['orange'] <= 0: res_rarity, p['orange'] = "Оранжевое", 30
         elif p['yellow'] <= 0: res_rarity, p['yellow'] = "Жёлтое", 15
         elif p['green'] <= 0: res_rarity, p['green'] = "Зеленое", 10
         elif p['lightblue'] <= 0: res_rarity, p['lightblue'] = "Голубое", 5
         elif p['blue'] <= 0: res_rarity, p['blue'] = "Синее", 3
 
-        if res_rarity == "Красное":
-            # Логика 50/50
-            if guar == 1 or random.random() < 0.5:
-                # ВЫИГРЫШ (Ивентовый)
+        pet = None
+        if is_red:
+            # Логика 50/50 для красных
+            if guar == 1 or random.random() < 0.5: # 50% шанс или гарант
+                # Выигрыш 50/50: получаем ивентового питомца с текущего баннера
                 pet = cursor.execute("SELECT name, image_url FROM pets WHERE rarity='Красное' AND is_event=?", (banner_id,)).fetchone()
-                guar = 0
+                guar = 0 # Сбрасываем гарант
                 red_wins += 1
             else:
-                # ПРОИГРЫШ (Стандартный красный)
-                pet = cursor.execute("SELECT name, image_url FROM pets WHERE rarity='Красное' AND is_event=0").fetchone()
-                guar = 1
+                # Проигрыш 50/50: получаем стандартного красного питомца
+                pet = cursor.execute("SELECT name, image_url FROM pets WHERE rarity='Красное' AND is_event=0 ORDER BY RANDOM() LIMIT 1").fetchone()
+                guar = 1 # Устанавливаем гарант на следующий раз
                 red_losses += 1
         else:
+            # Для не-красных просто выбираем случайного питомца нужной редкости
             pet = cursor.execute("SELECT name, image_url FROM pets WHERE rarity=? ORDER BY RANDOM() LIMIT 1", (res_rarity,)).fetchone()
-            if not pet: pet = cursor.execute("SELECT name, image_url FROM pets ORDER BY RANDOM() LIMIT 1").fetchone()
+        
+        # Если вдруг питомец не найден (крайний случай, если база пуста или криво заполнена)
+        if not pet:
+            pet = cursor.execute("SELECT name, image_url FROM pets ORDER BY RANDOM() LIMIT 1").fetchone() # Берем любого
+        
+        if pet: # Убеждаемся, что питомец точно есть
+            cursor.execute("INSERT INTO user_inventory (user_id, pet_name, pet_rarity, pet_image) VALUES (?, ?, ?, ?)",
+                           (user_id, pet[0], res_rarity, pet[1]))
+            results.append({"name": pet[0], "rarity": res_rarity, "image_url": pet[1]})
 
-        cursor.execute("INSERT INTO user_inventory (user_id, pet_name, pet_rarity, pet_image) VALUES (?, ?, ?, ?)",
-                       (user_id, pet[0], res_rarity, pet[1]))
-        results.append({"name": pet[0], "rarity": res_rarity, "image_url": pet[1]})
-
+    # Обновляем все статистические поля
     cursor.execute('''UPDATE users SET spins=spins-?, spent_spins=spent_spins+?, 
                       pity_red=?, pity_orange=?, pity_yellow=?, pity_green=?, pity_lightblue=?, pity_blue=?,
                       guaranteed_event=?, red_wins=red_wins+?, red_losses=red_losses+?,
@@ -149,3 +167,10 @@ def do_spins_logic(user_id, count=1, banner_id=1):
     conn.commit()
     conn.close()
     return {"success": True, "pets": results}
+
+def get_all_pets_data():
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    pets = conn.execute("SELECT name, rarity, image_url, is_event, skill FROM pets ORDER BY is_event DESC, rarity DESC").fetchall()
+    conn.close()
+    return [dict(ix) for ix in pets]
