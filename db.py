@@ -1,7 +1,7 @@
 import sqlite3
 import random
 
-DB_NAME = 'gacha_v11.db'
+DB_NAME = 'gacha_v12.db'
 
 PETS_DATA = [
     ("Собака", "Фиолетовое", "assets/pets/dog.png", 0, ""),
@@ -72,7 +72,13 @@ def seed_pets(cursor):
     if cursor.execute("SELECT COUNT(*) FROM pets").fetchone()[0] == 0:
         cursor.executemany("INSERT INTO pets (name, rarity, image_url, is_event, skill) VALUES (?,?,?,?,?)", PETS_DATA)
     conn.commit()
-
+    
+def create_user(user_id, username):
+    conn = sqlite3.connect(DB_NAME)
+    conn.execute('INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)', (user_id, str(username)))
+    conn.commit()
+    conn.close()
+    
 def get_user(user_id):
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
