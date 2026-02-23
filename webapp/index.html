@@ -2,159 +2,108 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Казино</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Главное окно игры (по умолчанию - Главная) -->
+    <div class="app">
+        
+        <!-- ДОМ (ИНВЕНТАРЬ) -->
         <div id="home-view" class="view active">
-            <h1 id="level-title">Уровень <span id="level-display">1</span></h1>
-            <img src="assets/strawberry.png" alt="Клубника" class="strawberry-img" onclick="clickStrawberry()">
-            <p class="strawberry-count"><img src="assets/strawberry_icon.png" alt="Клубника"> <span id="strawberry-count">0</span></p>
-            <button id="upgrade-btn" class="main-button" onclick="upgradeClicker()">Улучшить (10)</button>
+            <h1>Мои Питомцы</h1>
+            <div id="inventory-list" class="pet-grid">
+                <!-- Сюда попадут питомцы -->
+            </div>
         </div>
 
-        <!-- Вид "Гача" -->
+        <!-- ГАЧА -->
         <div id="gacha-view" class="view">
             <h1>Гача</h1>
-            <p>Круток: <span id="spins-count">0</span></p>
-
-            <!-- БАННЕРЫ -->
-            <div class="banner-selection">
+            <div class="spins-box">Круток: <span class="val-spins">0</span></div>
+            
+            <div class="banners">
                 <button id="banner-1" class="banner-btn active" onclick="setBanner(1)">Феникс</button>
                 <button id="banner-2" class="banner-btn" onclick="setBanner(2)">Цербер</button>
             </div>
 
-            <div class="gacha-buttons">
-                <button onclick="spin(1)">Жми крутить! x1</button>
-                <button onclick="spin(10)">Жми крутить! x10</button>
+            <div class="spin-buttons">
+                <button onclick="spin(1)" class="btn-spin">Крутить x1</button>
+                <button onclick="spin(10)" class="btn-spin">Крутить x10</button>
             </div>
 
-            <h2>Купить клубнику: <span id="strawberry-count-gacha">0</span></h2>
-            <div class="buy-buttons">
-                <button onclick="buySpins(1)">+1 (100)</button>
-                <button onclick="buySpins(5)">+5 (500)</button>
-                <button onclick="buySpins(10)">+10 (1000)</button>
-                <button onclick="buySpins(50)">+50 (5000)</button>
-                <button onclick="buySpins(100)">+100 (10000)</button>
+            <div class="shop">
+                <p>Купить за клубнику (<span class="val-strawberry">0</span>):</p>
+                <div class="buy-grid">
+                    <button onclick="buySpins(1)">+1 (100)</button>
+                    <button onclick="buySpins(5)">+5 (500)</button>
+                    <button onclick="buySpins(10)">+10 (1000)</button>
+                    <button onclick="buySpins(50)">+50 (5000)</button>
+                    <button onclick="buySpins(100)">+100 (10000)</button>
+                </div>
             </div>
         </div>
 
-        <!-- Вид "Игра" (Коллекция) -->
-        <div id="game-view" class="view">
-            <h1>Коллекция</h1>
-            <button class="main-button" onclick="openCollection()">Посмотреть коллекцию</button>
-            <!-- Оверлей коллекции будет отображаться здесь -->
+        <!-- ИГРА (КЛИКЕР) -->
+        <div id="clicker-view" class="view">
+            <h1 class="pink-text">Уровень <span class="val-level">1</span></h1>
+            <div class="clicker-container">
+                <img src="assets/strawberry.png" class="strawberry-main" onclick="clickStrawberry()">
+            </div>
+            <div class="strawberry-text">Клубника: <span class="val-strawberry">0</span></div>
+            <button id="upgrade-btn" class="btn-upgrade" onclick="upgradeClicker()">Улучшить (10)</button>
         </div>
 
-        <!-- Вид "Профиль" -->
+        <!-- ПРОФИЛЬ -->
         <div id="profile-view" class="view">
-            <h1>Профиль</h1>
-            <div class="profile-header">
-                <img id="profile-avatar" src="assets/default_avatar.png" alt="Аватар" class="profile-avatar">
-                <h2 id="profile-username">Игрок</h2>
-            </div>
-            
-            <div class="profile-stats">
-                <div class="stat-item">
-                    <p>Клубники</p>
-                    <p id="strawberry-count-profile">0</p>
-                </div>
-                <div class="stat-item">
-                    <p>Круток</p>
-                    <p id="spins-count-profile">0</p>
-                </div>
-                <div class="stat-item">
-                    <p>Уровень клика</p>
-                    <p id="level-display-profile">1</p>
-                </div>
-                <div class="stat-item">
-                    <p>Винрейт красных</p>
-                    <p id="stat-winrate-gacha">0%</p>
-                </div>
-                <div class="stat-item">
-                    <p>Средняя крутка до Leg</p>
-                    <p id="stat-avg-red">0</p>
-                </div>
-                <div class="stat-item">
-                    <p>Потрачено клубники</p>
-                    <p id="stat-spent-straw">0</p>
-                </div>
-                <div class="stat-item">
-                    <p>Потрачено круток</p>
-                    <p id="stat-spent-spins">0</p>
-                </div>
+            <div class="profile-card">
+                <img id="profile-avatar" src="assets/default_avatar.png" class="avatar">
+                <h2 id="profile-username">Загрузка...</h2>
             </div>
 
-            <div class="promo-section">
-                <h3>Промокод</h3>
-                <input type="text" id="promo-input" placeholder="Введите промокод">
-                <button class="main-button" onclick="claimPromo()">Активировать</button>
+            <div class="stats-grid">
+                <div class="stat-card"><span>Винрейт красных</span><b id="stat-winrate">0%</b></div>
+                <div class="stat-card"><span>Средняя крутка красной</span><b id="stat-avg-red">0</b></div>
+                <div class="stat-card"><span>Потрачено 🍓</span><b id="stat-spent-straw">0</b></div>
+                <div class="stat-card"><span>Потрачено 🌀</span><b id="stat-spent-spins">0</b></div>
+            </div>
+
+            <button class="btn-collection" onclick="openCollection()">Открыть коллекцию</button>
+
+            <div class="promo-box">
+                <input type="text" id="promo-input" placeholder="Промокод...">
+                <button onclick="claimPromo()">ОК</button>
             </div>
         </div>
 
-        <!-- НАВИГАЦИЯ -->
+        <!-- НАВИГАЦИЯ (БЕЗ КАРТИНОК) -->
         <nav class="bottom-nav">
-            <button onclick="showView('home-view')" class="nav-button active" id="nav-home">
-                <img src="assets/home_icon.png" alt="Дом"> Дом
-            </button>
-            <button onclick="showView('gacha-view')" class="nav-button" id="nav-gacha">
-                <img src="assets/gacha_icon.png" alt="Гача"> Гача
-            </button>
-            <button onclick="showView('game-view')" class="nav-button" id="nav-game">
-                <img src="assets/game_icon.png" alt="Игра"> Коллекция
-            </button>
-            <button onclick="showView('profile-view')" class="nav-button" id="nav-profile">
-                <img src="assets/profile_icon.png" alt="Профиль"> Профиль
-            </button>
+            <button class="nav-btn active" onclick="showView('home-view')">Дом</button>
+            <button class="nav-btn" onclick="showView('gacha-view')">Гача</button>
+            <button class="nav-btn" onclick="showView('clicker-view')">Игра</button>
+            <button class="nav-btn" onclick="showView('profile-view')">Профиль</button>
         </nav>
     </div>
 
-    <!-- Оверлей для гачи (анимация) -->
+    <!-- ОВЕРЛЕИ -->
     <div id="gacha-overlay" class="overlay hidden">
-        <div id="anim-box" class="gacha-animation">
-            <img id="gacha-gif" src="assets/default_gacha.gif" alt="Анимация гачи">
-        </div>
-        <div id="res-card" class="gacha-result hidden">
-            <img id="res-img" src="assets/strawberry.png" alt="Питомец">
+        <div id="anim-box"><img id="gacha-gif" src=""></div>
+        <div id="res-card" class="hidden">
+            <img id="res-img" src="">
             <h2 id="res-name"></h2>
             <p id="res-rarity"></p>
-            <button class="main-button" onclick="document.getElementById('gacha-overlay').classList.add('hidden')">Закрыть</button>
+            <button onclick="document.getElementById('gacha-overlay').classList.add('hidden')">Забрать</button>
         </div>
     </div>
 
-    <!-- Оверлей для коллекции -->
     <div id="collection-overlay" class="overlay hidden">
-        <div class="collection-window">
-            <h2>Моя коллекция</h2>
-            <div id="collection-grid" class="pet-grid">
-                <!-- Сюда будут динамически добавляться питомцы -->
-            </div>
-            <button class="main-button" onclick="document.getElementById('collection-overlay').classList.add('hidden')">Закрыть</button>
+        <div class="modal">
+            <h2>Коллекция</h2>
+            <div id="collection-grid" class="pet-grid"></div>
+            <button onclick="document.getElementById('collection-overlay').classList.add('hidden')">Закрыть</button>
         </div>
     </div>
 
-
-    <script>
-        function showView(viewId) {
-            document.querySelectorAll('.view').forEach(view => {
-                view.classList.remove('active');
-            });
-            document.getElementById(viewId).classList.add('active');
-            
-            document.querySelectorAll('.nav-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById('nav-' + viewId.replace('-view', '')).classList.add('active');
-
-            // Специальное обновление для профиля и гачи
-            if (viewId === 'profile-view' || viewId === 'gacha-view') {
-                updateUI();
-            }
-        }
-    </script>
     <script src="script.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </body>
