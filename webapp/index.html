@@ -35,6 +35,10 @@
 
     <!-- СТРАНИЦА ГАЧИ -->
     <div id="gacha" class="page">
+        <div class="banners">
+    <button id="banner-1" class="banner-btn active" onclick="setBanner(1)">Феникс</button>
+    <button id="banner-2" class="banner-btn" onclick="setBanner(2)">Единорог</button>
+    </div>
         <div class="pity-info">
             Красный: <span id="p-red">50</span> | 
             Оранжевый: <span id="p-orange">30</span> | 
@@ -67,7 +71,10 @@
             <img id="profile-avatar" src="" alt="Аватар">
             <h2 id="profile-username">Имя пользователя</h2>
         </div>
-        
+        <div class="promo-section">
+            <input type="text" id="promo-input" placeholder="Введите промокод">
+            <button onclick="claimPromo()">ОК</button>
+        </div>
         <div class="profile-content">
             <h3>Статистика</h3>
             <div class="stats-grid">
@@ -83,20 +90,30 @@
                     <p>Винрейт гачи (%)</p>
                     <p id="stat-winrate-gacha">0.0%</p>
                 </div>
+                <div class="stat-item">
+                    <p>Средняя крутка красных</p>
+                    <p id="stat-avg-red">0</p>
+                </div>
                  <div class="stat-item">
                     <p>Винрейт боя (%)</p>
                     <p id="stat-winrate-battle">0.0%</p>
                 </div>
                  <div class="stat-item">
-                    <p>Клубники потрачено</p>
-                    <p id="stat-spent">0</p>
+                    <p>Потрачено клубники</p>
+                    <p id="stat-spent-straw">0</p>
                 </div>
-                 <div class="stat-item">
-                    <p>Круток потрачено</p>
-                    <p id="stat-spins-bought">0</p>
+                <div class="stat-item">
+                    <p>Потрачено круток</p>
+                    <p id="stat-spent-spins">0</p>
                 </div>
             </div>
-            <button id="collection-btn">Коллекция</button>
+            <!-- ОВЕРЛЕЙ КОЛЛЕКЦИИ -->
+            <div id="collection-overlay" class="hidden">
+            <div class="collection-window">
+                <button onclick="this.parentElement.parentElement.classList.add('hidden')">Закрыть</button>
+                <div id="collection-grid"></div>
+            </div>
+        </div>
         </div>
     </div>
 
