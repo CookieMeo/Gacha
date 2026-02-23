@@ -92,6 +92,14 @@ nav button i { /* Если захочешь добавить иконки */
     background-color: #e0e0e0; color: #333; padding: 8px 15px; border: none;
     border-radius: 15px; font-size: 14px; margin: 5px; cursor: pointer;
 }
+.coll-item.gray {
+    filter: grayscale(1);
+    opacity: 0.5;
+}
+.collection-window {
+    background: white; padding: 20px; border-radius: 20px; width: 90%; max-height: 80%; overflow-y: auto;
+}
+.banner-btn.active { border: 2px solid gold; background: #ff5c8d; color: white; }
 
 /* --- Оверлей Гачи --- */
 #gacha-overlay {
