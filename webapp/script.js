@@ -1,14 +1,15 @@
-// 1. Инициализация переменных в самом начале
 const tg = window.Telegram.WebApp;
-const user = tg.initDataUnsafe?.user;
-const uid = user?.id || 12345;
-let currentBanner = 1; 
+const uid = tg.initDataUnsafe.user?.id || 12345;
 
+// --- КОНСТАНТЫ ---
 const UPGRADE_COSTS = {
-    1: [0, 1], 2: [10, 2], 3: [40, 3], 4: [90, 4], 5: [160, 5], 
-    6: [250, 6], 7: [360, 7], 8: [490, 8], 9: [640, 9], 10: [810, 10], 11: [4000, 100]
+    2: [10, 2], 3: [40, 3], 4: [90, 4], 5: [160, 5], 6: [250, 6], 
+    7: [360, 7], 8: [490, 8], 9: [640, 9], 10: [810, 10], 11: [4000, 100]
 };
 
+const BUY_SPINS_COST = { 1: 100, 5: 500, 10: 1000, 50: 5000, 100: 10000 };
+
+// !!! ЗАМЕНИ НА ПРАВИЛЬНЫЕ ПУТИ К ТВОИМ ГИФКАМ !!!
 const GIFS = {
     "Красное": "assets/red.gif",
     "Оранжевое": "assets/orange.gif",
@@ -20,112 +21,130 @@ const GIFS = {
     "default": "assets/purple.gif"
 };
 
-// 2. Функция API
-async function api(path, data) {
+// --- API ЗАПРОСЫ ---
+async function api(path, body) {
     try {
-        const res = await fetch('/api' + path, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+        const r = await fetch('/api' + path, {
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
         });
-        return await res.json();
-    } catch (e) {
-        console.error("API Error:", e);
-        return { success: false, error: "Ошибка сети" };
+        return await r.json();
+    } catch (e) { 
+        console.error(`Ошибка API (${path}):`, e);
+        return { success: false }; 
     }
 }
 
-// 3. Обновление интерфейса
+// --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
 async function updateUI() {
     const u = await api('/get_user', { user_id: uid });
-    if (!u || u.error) return;
+    if (!u) return;
 
-    // Обновляем все текстовые поля
-    document.querySelectorAll('.val-strawberry').forEach(el => el.innerText = u.strawberry);
-    document.querySelectorAll('.val-spins').forEach(el => el.innerText = u.spins);
-    document.querySelectorAll('.val-level').forEach(el => el.innerText = u.click_level);
+    // Обновляем ТЕКСТОВЫЕ значения
+    const setT = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
     
+    setT('straw-count', u.strawberry);
+    setT('gacha-straw', u.strawberry);
+    setT('spin-count', u.spins);
+    setT('lvl-display', "Уровень " + u.click_level);
+    
+    // Обновляем гаранты
+    setT('p-red', u.pity_red);
+    setT('p-orange', u.pity_orange); // <-- Добавил остальные гаранты
+    setT('p-yellow', u.pity_yellow);
+    setT('p-green', u.pity_green);
+    setT('p-lightblue', u.pity_lightblue);
+    setT('p-blue', u.pity_blue);
+
+    // Кнопка улучшения
     const upBtn = document.getElementById('upgrade-btn');
     if (upBtn) {
-        const nextCost = u.click_level >= 11 ? "МАКС" : UPGRADE_COSTS[u.click_level + 1][0];
-        upBtn.innerText = `Улучшить (${nextCost})`;
+        const cost = UPGRADE_COSTS[u.click_level + 1]?.[0]; // Получаем цену
+        if (cost !== undefined) {
+            upBtn.innerText = `Улучшить (${cost} 🍓)`;
+            upBtn.disabled = false;
+        } else {
+            upBtn.innerText = "Макс. уровень";
+            upBtn.disabled = true;
+        }
     }
-
-    // Профиль
-    document.getElementById('profile-username').innerText = user?.first_name || u.username || "Игрок";
-    if (user?.photo_url) document.getElementById('profile-avatar').src = user.photo_url;
-
-    // Статистика
-    const totalRed = (u.red_wins || 0) + (u.red_losses || 0);
-    const wr = totalRed > 0 ? ((u.red_wins / totalRed) * 100).toFixed(1) : 0;
-    document.getElementById('stat-winrate').innerText = wr + "%";
     
-    const avg = u.red_count > 0 ? (u.total_pulls_for_avg_red / u.red_count).toFixed(1) : 0;
-    document.getElementById('stat-avg-red').innerText = avg;
-    
-    document.getElementById('stat-spent-straw').innerText = u.spent_strawberry || 0;
-    document.getElementById('stat-spent-spins').innerText = u.spent_spins || 0;
+    // Обновляем ВСЮ статистику
+    const setStats = (id, val) => {
+        if(document.getElementById(id)) document.getElementById(id).innerText = val;
+    };
+    setStats('stat-pets-obtained', u.total_pets_obtained);
+    setStats('stat-clicks', u.total_clicks);
+    setStats('stat-spent', u.total_spent);
+    setStats('stat-spins-bought', u.total_spins_bought);
+    setStats('stat-gacha-pulls', u.total_gacha_pulls);
+    // winrate пока 0
+    setStats('stat-winrate-gacha', (u.total_pets_obtained / u.total_gacha_pulls * 100).toFixed(1) + "%");
+    setStats('stat-winrate-battle', "0.0%");
 
-    // Если мы на вкладке "Дом", обновляем инвентарь
-    if (document.getElementById('home-view').classList.contains('active')) {
-        renderInventory();
+    // Если открыта страница "Дом", обновляем инвентарь
+    if (document.getElementById('home').classList.contains('active')) {
+        updateInventory();
     }
 }
 
-// 4. Логика вкладок
-async function renderInventory() {
+// --- ОБНОВЛЕНИЕ ИНВЕНТАРЯ ---
+async function updateInventory() {
     const items = await api('/get_inventory', { user_id: uid });
-    const container = document.getElementById('inventory-list');
-    if (!container) return;
-    container.innerHTML = "";
-    if (items.length === 0) {
-        container.innerHTML = "<p>У вас пока нет питомцев</p>";
-        return;
+    const grid = document.getElementById('inventory-grid');
+    if (!grid) return; // Если сетки нет, выходим
+
+    grid.innerHTML = ""; // Очищаем сетку
+
+    // Проверяем, что items - это действительно массив и он не пустой
+    if (Array.isArray(items) && items.length > 0) {
+        items.forEach(item => {
+            grid.innerHTML += `
+                <div class="pet-item ${item.pet_rarity}">
+                    <img src="${item.pet_image || 'assets/strawberry.png'}">
+                    <p><b>${item.pet_name}</b></p>
+                    <small>${item.pet_rarity}</small>
+                    <!-- <p class="skill-text">${item.pet_skill}</p> -->
+                </div>
+            `;
+        });
+    } else {
+        // Если инвентарь пуст или вернулся не массив
+        grid.innerHTML = `<p style="grid-column: 1/3; text-align: center; color: gray;">Тут пока пусто</p>`;
     }
-    items.forEach(item => {
-        container.innerHTML += `
-            <div class="pet-card">
-                <img src="${item.pet_image}">
-                <p><b>${item.pet_name}</b></p>
-                <small>${item.pet_rarity}</small>
-            </div>
-        `;
-    });
 }
 
-// 5. Действия
-async function clickStrawberry() {
-    const res = await api('/click', { user_id: uid });
-    if (res.success) updateUI();
+// --- ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ И НАВИГАЦИЯ ---
+function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+
+    document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-nav'));
+    const activeBtn = document.getElementById(id + '-btn');
+    if (activeBtn) activeBtn.classList.add('active-nav');
+
+    updateUI(); // Обновляем данные при смене страницы
 }
 
-async function upgradeClicker() {
-    const res = await api('/upgrade', { user_id: uid });
-    if (res.success) updateUI();
-    else alert(res.error);
-}
-
-function setBanner(id) {
-    currentBanner = id;
-    document.querySelectorAll('.banner-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('banner-'+id).classList.add('active');
-}
-
-async function buySpins(count) {
-    const res = await api('/buy', { user_id: uid, count: count });
-    if (res.success) updateUI();
-    else alert(res.error);
-}
-
+// --- ГАЧА: КРУТКИ И АНИМАЦИЯ ---
 async function spin(count) {
-    const res = await api('/spin', { user_id: uid, count: count, banner_id: currentBanner });
-    if (!res.success) return alert(res.error);
+    const res = await api('/spin', { user_id: uid, count: count });
+    
+    if (!res.success) {
+        console.log("Ошибка сервера:", res); // Поможет отладить
+        return alert(res.error || "Ошибка при крутке");
+    }
 
-    const mainPet = res.pets[0];
+    const mainPet = res.pets[0]; // Теперь тут точно есть данные
+    
+    // Показываем оверлей
     const overlay = document.getElementById('gacha-overlay');
     overlay.classList.remove('hidden');
     document.getElementById('res-card').classList.add('hidden');
     document.getElementById('anim-box').classList.remove('hidden');
+    
+    // Ставим гифку редкости
     document.getElementById('gacha-gif').src = GIFS[mainPet.rarity] || GIFS.default;
 
     setTimeout(() => {
@@ -135,49 +154,68 @@ async function spin(count) {
         document.getElementById('res-name').innerText = mainPet.name;
         document.getElementById('res-rarity').innerText = mainPet.rarity;
         updateUI();
-    }, 4000); 
+    }, 5000); 
 }
 
-async function claimPromo() {
-    const code = document.getElementById('promo-input').value;
-    const res = await api('/claim_promo', { user_id: uid, code: code });
-    alert(res.msg || res.error);
-    updateUI();
+function closeGacha() {
+    document.getElementById('gacha-overlay').classList.add('hidden');
 }
 
-async function openCollection() {
-    const allPets = await api('/get_all_pets', {});
-    const myItems = await api('/get_inventory', { user_id: uid });
-    const myNames = myItems.map(i => i.pet_name);
+// --- ПОКУПКА КРУТОК ---
+async function buy(count) {
+    const cost = BUY_SPINS_COST[count];
+    if (!cost) return alert("Неверное количество");
     
-    const grid = document.getElementById('collection-grid');
-    grid.innerHTML = "";
-    allPets.forEach(p => {
-        const isHave = myNames.includes(p.name);
-        grid.innerHTML += `
-            <div class="coll-item ${isHave ? '' : 'gray'}">
-                <img src="${p.image_url}">
-                <p>${p.name}</p>
-            </div>
-        `;
-    });
-    document.getElementById('collection-overlay').classList.remove('hidden');
+    const res = await api('/buy', { user_id: uid, count: count });
+    if (res.success) {
+        updateUI(); // Обновляем отображение клубники и круток
+    } else {
+        alert("Недостаточно клубники!");
+    }
 }
 
-// Переключение видов
-function showView(viewId) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById(viewId).classList.add('active');
-    
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    // Находим кнопку по тексту или ID
-    event.currentTarget.classList.add('active');
-    
-    updateUI();
+// --- УЛУЧШЕНИЕ КЛИКЕРА ---
+async function upgradeClicker() {
+    const res = await api('/upgrade', { user_id: uid });
+    if (res.success) {
+        updateUI();
+    } else {
+        // Если res.success == false, значит была ошибка на сервере
+        alert(res.error || "Мало клубники или достигнут макс. уровень!");
+    }
 }
 
-// Старт
+// --- ИНИЦИАЛИЗАЦИЯ ---
 document.addEventListener('DOMContentLoaded', () => {
     tg.expand();
-    updateUI();
+    
+    // Навигация
+    document.getElementById('home-btn').onclick = () => showPage('home');
+    document.getElementById('gacha-btn').onclick = () => showPage('gacha');
+    document.getElementById('game-btn').onclick = () => showPage('game');
+    document.getElementById('profile-btn').onclick = () => showPage('profile');
+
+    // Кнопки игры
+    const collectBtn = document.getElementById('collect-btn');
+    if(collectBtn) collectBtn.onclick = async () => {
+        await api('/click', { user_id: uid });
+        updateUI();
+    };
+
+    const upgradeBtn = document.getElementById('upgrade-btn');
+    if(upgradeBtn) upgradeBtn.onclick = upgradeClicker;
+
+    // Кнопки гачи
+    if(document.getElementById('spin-1')) document.getElementById('spin-1').onclick = () => spin(1);
+    if(document.getElementById('spin-10')) document.getElementById('spin-10').onclick = () => spin(10);
+
+    // Кнопки покупки круток
+    document.querySelectorAll('.shop button').forEach(btn => {
+        const count = parseInt(btn.innerText.split('(')[0].replace('+','').trim());
+        if (!isNaN(count)) {
+            btn.onclick = () => buy(count);
+        }
+    });
+
+    updateUI(); // Первоначальное обновление интерфейса
 });
